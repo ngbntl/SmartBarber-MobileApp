@@ -24,8 +24,13 @@ export default function OnboardingScreen() {
   const router = useRouter();
 
   const finishOnboarding = async () => {
-    await AsyncStorage.setItem("onboarded", "false");
-    router.replace("/(auth)/login");
+    try {
+      await AsyncStorage.setItem("onboarded", "true");
+    } catch {
+      console.error("Lỗi lưu trạng thái onboarded");
+    } finally {
+      router.replace("/(auth)");
+    }
   };
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const flatListRef = useAnimatedRef<any>();

@@ -7,8 +7,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import "@/global.css";
-
-import IntroScreen from "@/components/ui/introScreen";
+import IntroScreen from "@/components/ui/IntroScreen";
 
 function LayoutContent() {
   const router = useRouter();
@@ -17,6 +16,7 @@ function LayoutContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [isOnboarded, setIsOnboarded] = useState<boolean | null>(null);
   const [isIntro, setIsIntro] = useState(true);
+
   const handleIntroFinish = () => {
     setIsIntro(false);
   };
@@ -27,7 +27,7 @@ function LayoutContent() {
         const onboarded = await AsyncStorage.getItem("onboarded");
         setIsOnboarded(onboarded === "false");
       } catch (error) {
-        console.error(error);
+        console.error("Lỗi kiểm tra onboarding:", error);
       } finally {
         setIsLoading(false);
       }
@@ -35,37 +35,36 @@ function LayoutContent() {
     checkOnboarding();
   }, []);
 
-  const handleNavigation = useCallback(() => {
-    if (isLoading || isOnboarded === null) return;
+  useEffect(() => {
+    if (isLoading || isOnboarded === null || isIntro) {
+      return;
+    }
 
-    if (!isOnboarded) {
-      if (segments[0] !== "onboardingScreen") {
+    const timeout = setTimeout(() => {
+      if (!isOnboarded) {
         router.replace("/onboardingScreen");
-      }
-    } else if (user) {
-      if (segments[0] !== "(tabs)") {
+      } else if (user) {
         router.replace("/(tabs)");
-      }
-    } else {
-      if (segments[0] !== "(auth)") {
+      } else {
         router.replace("/(auth)/login");
       }
-    }
-  }, [isLoading, isOnboarded, user, segments, router]);
+    }, 0);
 
-  useEffect(() => {
-    if (!isIntro) {
-      handleNavigation();
-    }
-  }, [handleNavigation]);
+    return () => clearTimeout(timeout);
+  }, [isLoading, isOnboarded, user, isIntro]);
 
-  if (!isIntro) {
+  if (isIntro) {
     return <IntroScreen onFinish={handleIntroFinish} />;
   }
-  if (isLoading) {
-    return null;
-  }
 
+  if (isLoading || isOnboarded === null) {
+    return (
+      <Stack
+        screenOptions={{ headerShown: false }}
+        initialRouteName="loading"
+      />
+    );
+  }
   return <Stack screenOptions={{ headerShown: false }} />;
 }
 

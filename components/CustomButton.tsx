@@ -11,6 +11,7 @@ import {
   StyleSheet,
 } from "react-native";
 import React from "react";
+import { router } from "expo-router";
 
 const CustomButton = ({ flatListRef, flatListIndex, dataLength }) => {
   const buttonAnimationStyle = useAnimatedStyle(() => {
@@ -59,7 +60,7 @@ const CustomButton = ({ flatListRef, flatListIndex, dataLength }) => {
             animated: true,
           });
         } else {
-          console.log("Button Clicked");
+          router.replace("/(auth)/login");
         }
       }}
     >
