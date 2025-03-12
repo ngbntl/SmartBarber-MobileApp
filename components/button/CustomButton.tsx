@@ -12,8 +12,10 @@ import {
 } from "react-native";
 import React from "react";
 import { router } from "expo-router";
-
-const CustomButton = ({ flatListRef, flatListIndex, dataLength }) => {
+import { CusButtonInterface } from "@/types/button";
+import { Colors } from "@/constants/Colors";
+const CustomButton = (button: CusButtonInterface) => {
+  const { flatListRef, flatListIndex, dataLength } = button;
   const buttonAnimationStyle = useAnimatedStyle(() => {
     return {
       width:
@@ -60,13 +62,15 @@ const CustomButton = ({ flatListRef, flatListIndex, dataLength }) => {
             animated: true,
           });
         } else {
-          router.replace("/(auth)/login");
+          router.replace("/(auth)/register");
         }
       }}
     >
-      <Animated.View style={[styles.container, buttonAnimationStyle]}>
+      <Animated.View
+        style={[styles.container, buttonAnimationStyle, button.style]}
+      >
         <Animated.Text style={[styles.textButton, textAnimationStyle]}>
-          Get started
+          {button.title}
         </Animated.Text>
         <Animated.Image
           source={require("@/assets/images/arrow-icon.png")}
@@ -83,7 +87,7 @@ const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "orange",
+    backgroundColor: Colors.button,
     borderRadius: 100,
     overflow: "hidden",
     padding: 10,
