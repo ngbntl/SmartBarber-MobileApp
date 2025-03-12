@@ -14,12 +14,15 @@ import {
   Dimensions,
   SafeAreaView,
   useWindowDimensions,
+  Pressable,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import data from "@/assets/data/data";
-import Pagination from "@/components/Pagination";
-import CustomButton from "@/components/CustomButton";
+import Pagination from "@/components/ui/Pagination";
+import CustomButton from "@/components/button/CustomButton";
+import { Colors } from "@/constants/Colors";
+import { useState } from "react";
 export default function OnboardingScreen() {
   const router = useRouter();
 
@@ -29,15 +32,18 @@ export default function OnboardingScreen() {
     } catch {
       console.error("Lỗi lưu trạng thái onboarded");
     } finally {
-      router.replace("/(auth)");
+      router.replace("/(auth)/login");
     }
   };
   const { width: SCREEN_WIDTH } = useWindowDimensions();
   const flatListRef = useAnimatedRef<any>();
   const x = useSharedValue(0);
   const flatListIndex = useSharedValue(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
+
   const onViewableItemsChanged = ({ viewableItems }) => {
     flatListIndex.value = viewableItems[0].index;
+    setCurrentIndex(viewableItems[0].index);
   };
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -118,7 +124,7 @@ export default function OnboardingScreen() {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-violet-950">
+    <SafeAreaView className="flex-1 bg-primary">
       <Animated.FlatList
         ref={flatListRef}
         onScroll={onScroll}
@@ -137,11 +143,27 @@ export default function OnboardingScreen() {
       <View className="flex-row justify-between items-center mx-5 my-5">
         <Pagination data={data} x={x} screenWidth={SCREEN_WIDTH} />
         <CustomButton
+          title="Get Started"
           flatListRef={flatListRef}
           flatListIndex={flatListIndex}
           dataLength={data.length}
+          style={{ width: 200, height: 50 }}
         />
       </View>
+      {currentIndex == data.length - 1 && (
+        <View className="absolute flex-row left-1/2 -translate-x-1/2 gap-1 bottom-8">
+          <Text className="text-white text-center">
+            Already have an account?
+          </Text>
+          <Pressable
+            onPress={() => {
+              router.replace("/(auth)/login");
+            }}
+          >
+            <Text className="text-button font-bold"> Sign In</Text>
+          </Pressable>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

@@ -1,27 +1,15 @@
-import { View, Text, ActivityIndicator, StyleSheet } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import React from "react";
+import { Colors } from "@/constants/Colors";
 
-const Loading = () => {
+const Loading = ({ size = "large", color = Colors.primary }) => {
   return (
-    <View style={styles.container}>
-      <ActivityIndicator size="large" color="#007bff" />
-      <Text style={styles.text}>Loading...</Text>
+    <View className="justify-center items-center">
+      <ActivityIndicator size={size} color={color} />
     </View>
   );
 };
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.1)",
-  },
-  text: {
-    marginTop: 10,
-    fontSize: 18,
-    color: "#333",
-  },
-});
-
 export default Loading;
+
+const styles = StyleSheet.create({});
