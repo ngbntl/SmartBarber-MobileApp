@@ -207,7 +207,7 @@ const Login = () => {
 
             <TouchableOpacity
               activeOpacity={0.7}
-              onPress={() => router.replace("/(auth)/otpConfirm")}
+              onPress={() => router.replace("/(auth)/forgotPassword")}
             >
               <Text className="text-primary text-right font-medium mb-6">
                 Forgot Password?

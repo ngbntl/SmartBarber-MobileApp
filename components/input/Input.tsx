@@ -8,6 +8,7 @@ interface InputProps {
   containerStyle?: string;
   containerStyles?: any;
   inputRef?: any;
+  error?: string;
   [key: string]: any;
 }
 
@@ -17,11 +18,12 @@ const Input = ({
   containerStyle,
   containerStyles,
   inputRef,
+  error,
   ...props
 }: InputProps) => {
   return (
     <View
-      style={[styles.container, containerStyles]}
+      style={[styles.container, error ? styles.error : null, containerStyles]}
       className={containerStyle}
     >
       {icon && <View>{icon}</View>}
@@ -56,5 +58,8 @@ const styles = StyleSheet.create({
     borderCurve: "continuous",
     gap: 10,
     borderRadius: 12,
+  },
+  error: {
+    borderColor: "red",
   },
 });
