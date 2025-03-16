@@ -19,8 +19,6 @@ const Icon = ({
   name: keyof typeof icons;
   [key: string]: any;
 }) => {
-  console.log("Icon requested:", name);
-
   const IconComponent = icons[name];
 
   if (!IconComponent) {
