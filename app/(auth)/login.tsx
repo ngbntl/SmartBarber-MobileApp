@@ -221,6 +221,7 @@ const Login = () => {
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/(auth)/register")}
+                className="bg-white border border-primary rounded-md px-2"
               >
                 <Text className="text-primary font-bold">Register</Text>
               </TouchableOpacity>
