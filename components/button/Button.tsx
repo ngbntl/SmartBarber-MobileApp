@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
   button: {
     borderCurve: "continuous",
     height: 50,
+    borderRadius: 10,
   },
   text: {},
 });

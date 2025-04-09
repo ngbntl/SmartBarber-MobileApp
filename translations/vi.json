@@ -1,0 +1,58 @@
+{
+  "common": {
+    "welcome": "Chào mừng",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "logout": "Đăng xuất",
+    "settings": "Cài đặt",
+    "profile": "Hồ sơ",
+    "save": "Lưu",
+    "cancel": "Hủy",
+    "delete": "Xóa",
+    "edit": "Sửa",
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "previous": "Trước đó",
+    "search": "Tìm kiếm",
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra, vui lòng thử lại sau",
+    "success": "Thành công",
+    "warning": "Cảnh báo",
+    "info": "Thông tin",
+    "getStarted": "Bắt đầu"
+  },
+  "auth": {
+    "login": {
+      "email": "Email",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "forgotPassword": "Quên mật khẩu?",
+      "rememberMe": "Ghi nhớ đăng nhập",
+      "noAccount": "Chưa có tài khoản?",
+      "haveAccount": "Đã có tài khoản?",
+      "signIn": "Đăng nhập",
+      "login_success": "Đăng nhập thành công"
+    },
+    "account_login_failed": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
+    "register": {
+      "email": "Email",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "signUp": "Đăng ký"
+    }
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Chào mừng đến với ứng dụng",
+      "description": "Khám phá những tính năng tuyệt vời của chúng tôi"
+    },
+    "slide2": {
+      "title": "Dễ dàng sử dụng",
+      "description": "Giao diện thân thiện, dễ dàng thao tác"
+    },
+    "slide3": {
+      "title": "Bắt đầu ngay",
+      "description": "Đăng ký tài khoản để trải nghiệm đầy đủ tính năng"
+    }
+  }
+}

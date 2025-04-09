@@ -9,6 +9,7 @@ import {
   Animated,
   Dimensions,
   Keyboard,
+  Alert,
 } from "react-native";
 import React, { useRef, useState, useEffect } from "react";
 import Button from "@/components/button/Button";
@@ -19,22 +20,35 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 import Show from "@/assets/icons/Show";
+import AuthApi from "@/api/auth";
+import { RegisterInterface } from "@/types/auth";
+import { useDispatch } from "react-redux";
+import { login } from "@/store/authSlice";
+import Toast from "@/components/ui/Toast";
+import { useNotification } from "@/hooks/useNotification";
 
 const { height } = Dimensions.get("window");
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const firstNameRef = useRef(null);
-  const lastNameRef = useRef(null);
-  const emailRef = useRef(null);
-  const passwordRef = useRef(null);
-  const confirmPasswordRef = useRef(null);
+  const dispatch = useDispatch();
+  const { appNotification, toast, setToast } = useNotification();
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [firstNameError, setFirstNameError] = useState("");
+  const [lastNameError, setLastNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [confirmPasswordError, setConfirmPasswordError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [keyboardOpen, setKeyboardOpen] = useState(false);
 
-  const headerHeight = useRef(new Animated.Value(height * 0.4)).current;
+  const headerHeight = useRef(new Animated.Value(height * 0.35)).current;
   const logoTranslateY = useRef(new Animated.Value(0)).current;
   const logoScale = useRef(new Animated.Value(1)).current;
   const headerOpacity = useRef(new Animated.Value(0)).current;
@@ -128,6 +142,107 @@ export default function RegisterScreen() {
 
   const dismissKeyboard = () => Keyboard.dismiss();
 
+  const validateEmail = (email: string) => {
+    const re = /\S+@\S+\.\S+/;
+    return re.test(email);
+  };
+
+  const validateForm = () => {
+    let isValid = true;
+    setFirstNameError("");
+    setLastNameError("");
+    setEmailError("");
+    setPasswordError("");
+    setConfirmPasswordError("");
+
+    if (!firstName.trim()) {
+      setFirstNameError("Vui lòng nhập họ");
+      isValid = false;
+    }
+
+    if (!lastName.trim()) {
+      setLastNameError("Vui lòng nhập tên");
+      isValid = false;
+    }
+
+    if (!email.trim()) {
+      setEmailError("Vui lòng nhập email");
+      isValid = false;
+    } else if (!validateEmail(email)) {
+      setEmailError("Email không hợp lệ");
+      isValid = false;
+    }
+
+    if (!password.trim()) {
+      setPasswordError("Vui lòng nhập mật khẩu");
+      isValid = false;
+    } else if (password.length < 8) {
+      setPasswordError("Mật khẩu phải có ít nhất 8 ký tự");
+      isValid = false;
+    } else {
+      const passwordRegex =
+        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        setPasswordError(
+          "Mật khẩu phải chứa ít nhất 1 chữ cái, 1 số và 1 ký tự đặc biệt"
+        );
+        isValid = false;
+      }
+    }
+
+    if (!confirmPassword.trim()) {
+      setConfirmPasswordError("Vui lòng xác nhận mật khẩu");
+      isValid = false;
+    } else if (password !== confirmPassword) {
+      setConfirmPasswordError("Mật khẩu xác nhận không khớp");
+      isValid = false;
+    }
+
+    return isValid;
+  };
+
+  const handleRegister = async () => {
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+    try {
+      const authApi = new AuthApi();
+      const registerData: RegisterInterface = {
+        firstName,
+        lastName,
+        email,
+        password,
+      };
+      console.log("registerData", registerData);
+      const response = await authApi.register(registerData);
+
+      if (response) {
+        appNotification({
+          statusCode: 200,
+          message: "Đăng ký thành công",
+        });
+        setTimeout(() => {
+          router.replace(
+            `/(auth)/otpConfirm?email=${encodeURIComponent(email)}`
+          );
+        }, 1500);
+      } else {
+        appNotification({
+          statusCode: 400,
+          message: "Có lỗi xảy ra, vui lòng thử lại sau",
+        });
+      }
+    } catch (error) {
+      console.error("Register error:", error);
+      appNotification({
+        statusCode: 500,
+        message: "Có lỗi xảy ra, vui lòng thử lại sau",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <TouchableOpacity
       activeOpacity={1}
@@ -135,6 +250,13 @@ export default function RegisterScreen() {
       style={{ flex: 1 }}
     >
       <StatusBar style="light" />
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
 
       <Animated.View
         style={{
@@ -177,7 +299,7 @@ export default function RegisterScreen() {
               transform: [{ translateY: formTranslateY }],
             }}
           >
-            <View className="gap-6 mb-6">
+            <View className="gap-3">
               <Text className="text-4xl font-bold text-primary">
                 Create Account ✌️
               </Text>
@@ -186,20 +308,34 @@ export default function RegisterScreen() {
               </Text>
             </View>
 
-            <View className="flex-row gap-4 mb-4">
+            <View className="flex-row gap-4 -mb-1">
               <View className="flex-1">
                 <Input
                   placeholder="First Name"
-                  icon={<Icon name="user" size={26} strokeWidth={1.6} />}
-                  onChangeText={(value: null) => (lastNameRef.current = value)}
+                  icon={<Icon name="user" size={24} strokeWidth={1.6} />}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  error={firstNameError}
                 />
+                {firstNameError && (
+                  <Text className="text-red-500 text-xs ml-1 -mt-2">
+                    {firstNameError}
+                  </Text>
+                )}
               </View>
               <View className="flex-1">
                 <Input
                   placeholder="Last Name"
-                  icon={<Icon name="user" size={26} strokeWidth={1.6} />}
-                  onChangeText={(value: null) => (firstNameRef.current = value)}
+                  icon={<Icon name="user" size={24} strokeWidth={1.6} />}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  error={lastNameError}
                 />
+                {lastNameError && (
+                  <Text className="text-red-500 text-xs ml-1 -mt-2">
+                    {lastNameError}
+                  </Text>
+                )}
               </View>
             </View>
 
@@ -207,16 +343,23 @@ export default function RegisterScreen() {
               placeholder="Email"
               icon={<Icon name="mail" size={26} strokeWidth={1.6} />}
               keyboardType="email-address"
-              onChangeText={(value: null) => (emailRef.current = value)}
-              containerStyle="mb-4"
+              value={email}
+              onChangeText={setEmail}
+              containerStyle="mb-1"
+              error={emailError}
             />
+            {emailError && (
+              <Text className="text-red-500 text-xs ml-1">{emailError}</Text>
+            )}
 
             <Input
               placeholder="Password"
               icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
               secureTextEntry={!showPassword}
-              onChangeText={(value: null) => (passwordRef.current = value)}
-              containerStyle="mb-4"
+              value={password}
+              onChangeText={setPassword}
+              containerStyle="mb-1"
+              error={passwordError}
               rightContent={
                 <Show
                   isVisible={showPassword}
@@ -225,13 +368,18 @@ export default function RegisterScreen() {
                 />
               }
             />
+            {passwordError && (
+              <Text className="text-red-500 text-xs ml-1">{passwordError}</Text>
+            )}
 
             <Input
               placeholder="Confirm Password"
               icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
               secureTextEntry={!showConfirmPassword}
-              onChangeText={(value: null) => (confirmPasswordRef.current = value)}
-              containerStyle="mb-6"
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              containerStyle="mb-1"
+              error={confirmPasswordError}
               rightContent={
                 <Show
                   isVisible={showConfirmPassword}
@@ -240,15 +388,25 @@ export default function RegisterScreen() {
                 />
               }
             />
-
-            <Button title="Register" loading={isLoading} onPress={() => {}} />
+            {confirmPasswordError && (
+              <Text className="text-red-500 text-xs ml-1">
+                {confirmPasswordError}
+              </Text>
+            )}
+            <Button
+              title="Register"
+              loading={isLoading}
+              onPress={handleRegister}
+              buttonStyle={{
+                marginTop: 10,
+              }}
+            />
 
             <View className="flex-row justify-center mt-6">
               <Text className="text-gray-500">Already have an account? </Text>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/(auth)/login")}
-                className="bg-white border border-primary rounded-md px-2"
               >
                 <Text className="text-primary font-bold">Login</Text>
               </TouchableOpacity>

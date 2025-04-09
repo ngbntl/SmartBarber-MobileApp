@@ -1,0 +1,48 @@
+{
+  "common": {
+    "welcome": "ようこそ",
+    "login": "ログイン",
+    "register": "登録",
+    "logout": "ログアウト",
+    "settings": "設定",
+    "profile": "プロフィール",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "edit": "編集",
+    "back": "戻る",
+    "next": "次へ",
+    "previous": "前へ",
+    "search": "検索",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "success": "成功",
+    "warning": "警告",
+    "info": "情報",
+    "getStarted": "始める"
+  },
+  "auth": {
+    "email": "メールアドレス",
+    "password": "パスワード",
+    "confirmPassword": "パスワード確認",
+    "forgotPassword": "パスワードをお忘れですか？",
+    "rememberMe": "ログイン状態を保持",
+    "noAccount": "アカウントをお持ちでないですか？",
+    "haveAccount": "すでにアカウントをお持ちですか？",
+    "signIn": "サインイン"
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "アプリへようこそ",
+      "description": "素晴らしい機能を発見しましょう"
+    },
+    "slide2": {
+      "title": "使いやすい",
+      "description": "ユーザーフレンドリーなインターフェース、簡単に操作できます"
+    },
+    "slide3": {
+      "title": "始めましょう",
+      "description": "アカウントを登録してすべての機能を体験してください"
+    }
+  }
+}

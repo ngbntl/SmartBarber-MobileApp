@@ -1,0 +1,60 @@
+{
+  "common": {
+    "welcome": "Welcome",
+    "login": "Login",
+    "register": "Register",
+    "logout": "Logout",
+    "settings": "Settings",
+    "profile": "Profile",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "search": "Search",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "getStarted": "Get Started"
+  },
+  "auth": {
+    "login": {
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "forgotPassword": "Forgot Password?",
+      "rememberMe": "Remember Me",
+      "noAccount": "Don't have an account?",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign In",
+      "login_success": "Login successful"
+    },
+    "account_login_failed": "Login failed. Please check your credentials and try again.",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "forgotPassword": "Forgot Password?",
+    "rememberMe": "Remember Me",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already have an account?",
+    "signIn": "Sign In"
+  },
+  "onboarding": {
+    "slide1": {
+      "title": "Welcome to the App",
+      "description": "Discover our amazing features"
+    },
+    "slide2": {
+      "title": "Easy to Use",
+      "description": "User-friendly interface, easy to operate"
+    },
+    "slide3": {
+      "title": "Get Started",
+      "description": "Register an account to experience full features"
+    }
+  }
+}

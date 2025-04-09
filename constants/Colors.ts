@@ -9,6 +9,10 @@ const tintColorDark = "#fff";
 export const Colors = {
   primary: "#3B6790",
   button: "#EFB036",
+  success: "#4CAF50",
+  error: "#F44336",
+  warning: "#FF9800",
+  info: "#2196F3",
   light: {
     text: "#3B6790",
     background: "#fff",
