@@ -1,4 +1,5 @@
 import Constants from "expo-constants";
+import { store } from "@/store";
 
 class Api {
   uri: string;
@@ -14,20 +15,29 @@ class Api {
     headers: Record<string, string> = {}
   ) {
     const url = `${Constants.expoConfig?.extra?.API_NETWORK}/${this.uri}${path}`;
+    console.log("API URL:", url);
+    console.log("API Data:", data);
 
+    // Lấy token từ Redux store
+    const token = store.getState().auth.user?.token;
     const options: RequestInit = {
       method,
       headers: {
         "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers,
-      },
+      } as HeadersInit,
       ...(method === "GET"
         ? { body: undefined }
         : { body: JSON.stringify(data) }),
     };
 
     return fetch(url, options)
-      .then((response) => response.json())
+      .then(async (response) => {
+        const responseData = await response.json();
+        console.log("API Response:", responseData);
+        return responseData;
+      })
       .catch((error) => {
         console.error("API request error:", error);
         throw error;

@@ -15,6 +15,7 @@ import {
   SafeAreaView,
   useWindowDimensions,
   Pressable,
+  ViewToken,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
@@ -23,8 +24,19 @@ import Pagination from "@/components/ui/Pagination";
 import CustomButton from "@/components/button/CustomButton";
 import { Colors } from "@/constants/Colors";
 import { useState } from "react";
+import LanguageDropdown from "@/components/ui/LanguageDropdown";
+import { useLanguage } from "@/hooks/useLanguage";
+
+interface OnboardingItem {
+  id: number;
+  title: string;
+  description: string;
+  image: any;
+}
+
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { t } = useLanguage();
 
   const finishOnboarding = async () => {
     try {
@@ -41,16 +53,30 @@ export default function OnboardingScreen() {
   const flatListIndex = useSharedValue(0);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const onViewableItemsChanged = ({ viewableItems }) => {
-    flatListIndex.value = viewableItems[0].index;
-    setCurrentIndex(viewableItems[0].index);
+  const onViewableItemsChanged = ({
+    viewableItems,
+  }: {
+    viewableItems: ViewToken[];
+  }) => {
+    if (viewableItems[0]) {
+      flatListIndex.value = viewableItems[0].index || 0;
+      setCurrentIndex(viewableItems[0].index || 0);
+    }
   };
+
   const onScroll = useAnimatedScrollHandler({
     onScroll: (event) => {
       x.value = event.contentOffset.x;
     },
   });
-  const RenderItem = ({ item, index }) => {
+
+  const RenderItem = ({
+    item,
+    index,
+  }: {
+    item: OnboardingItem;
+    index: number;
+  }) => {
     const imageAnimationStyle = useAnimatedStyle(() => {
       const opacityAnimation = interpolate(
         x.value,
@@ -102,7 +128,6 @@ export default function OnboardingScreen() {
       );
       return {
         opacity: opacityAnimation,
-
         transform: [{ translateY: translateYAnimation }],
       };
     });
@@ -115,9 +140,11 @@ export default function OnboardingScreen() {
         />
         <Animated.View style={textAnimationStyle}>
           <Text className="text-center text-3xl text-white font-bold">
-            {item.title}
+            {t(`onboarding.slide${index + 1}.title`)}
           </Text>
-          <Text className="text-center text-white">{item.description}</Text>
+          <Text className="text-center text-white">
+            {t(`onboarding.slide${index + 1}.description`)}
+          </Text>
         </Animated.View>
       </View>
     );
@@ -125,6 +152,9 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-primary">
+      <View className="absolute top-5 right-5 z-10">
+        <LanguageDropdown />
+      </View>
       <Animated.FlatList
         ref={flatListRef}
         onScroll={onScroll}
@@ -143,7 +173,7 @@ export default function OnboardingScreen() {
       <View className="flex-row justify-between items-center mx-5 my-5">
         <Pagination data={data} x={x} screenWidth={SCREEN_WIDTH} />
         <CustomButton
-          title="Get Started"
+          title={t("common.getStarted")}
           flatListRef={flatListRef}
           flatListIndex={flatListIndex}
           dataLength={data.length}
@@ -153,14 +183,14 @@ export default function OnboardingScreen() {
       {currentIndex == data.length - 1 && (
         <View className="absolute flex-row left-1/2 -translate-x-1/2 gap-1 bottom-8">
           <Text className="text-white text-center">
-            Already have an account?
+            {t("auth.haveAccount")}
           </Text>
           <Pressable
             onPress={() => {
               router.replace("/(auth)/login");
             }}
           >
-            <Text className="text-button font-bold"> Sign In</Text>
+            <Text className="text-button font-bold"> {t("auth.signIn")}</Text>
           </Pressable>
         </View>
       )}

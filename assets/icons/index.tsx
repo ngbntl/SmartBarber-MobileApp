@@ -4,12 +4,19 @@ import BackArrow from "./BackArrow";
 import Mail from "./Mail";
 import Show from "./Show";
 import LockIcon from "./Lock";
-
+import UserIcon from "./User";
+import CheckIcon from "./Check";
+import CloseIcon from "./Close";
+import AlertIcon from "./Alert";
 const icons: { [key: string]: React.ComponentType<any> } = {
   backArrow: BackArrow,
   mail: Mail,
   show: Show,
   lock: LockIcon,
+  user: UserIcon,
+  close: CloseIcon,
+  check: CheckIcon,
+  alert: AlertIcon,
 };
 
 const Icon = ({
