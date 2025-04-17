@@ -6,7 +6,6 @@ import {
   TextInput,
   Keyboard,
   TouchableWithoutFeedback,
-  Alert,
 } from "react-native";
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -18,48 +17,74 @@ import Button from "@/components/button/Button";
 import { useNotification } from "@/hooks/useNotification";
 import AuthApi from "@/api/auth";
 import { VerifyEmailInterface } from "@/types/auth";
+import Toast from "@/components/ui/Toast";
+import { useTranslation } from "react-i18next";
 
 const OTP_LENGTH = 6;
 
 export default function OTPConfirmScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const { email } = useLocalSearchParams<{ email: string }>();
-  const { appNotification } = useNotification();
+  const { appNotification, toast, setToast } = useNotification();
   const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [isLoading, setIsLoading] = useState(false);
   const [countdown, setCountdown] = useState(60);
   const [canResend, setCanResend] = useState(false);
   const inputRefs = useRef<TextInput[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     inputRefs.current[0]?.focus();
-    const timer = setInterval(() => {
+    startCountdown();
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
+
+  const startCountdown = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+
+    timerRef.current = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          clearInterval(timer);
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
           setCanResend(true);
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
+  };
 
   const handleOtpChange = (text: string, index: number) => {
     if (text.length > 1) {
       const otpArray = text.split("").slice(0, OTP_LENGTH);
       const newOtp = [...otp];
+
       otpArray.forEach((digit, i) => {
-        if (i < OTP_LENGTH) {
-          newOtp[i] = digit;
+        if (index + i < OTP_LENGTH) {
+          newOtp[index + i] = digit;
         }
       });
+
       setOtp(newOtp);
-      inputRefs.current[Math.min(otpArray.length, OTP_LENGTH - 1)]?.focus();
-      if (otpArray.length === OTP_LENGTH) {
-        handleVerify();
+
+      const lastIndex = Math.min(index + otpArray.length - 1, OTP_LENGTH - 1);
+      inputRefs.current[lastIndex]?.focus();
+
+      if (newOtp.every((digit) => digit !== "")) {
+        setTimeout(() => {
+          handleVerify(newOtp);
+        }, 300);
       }
       return;
     }
@@ -70,51 +95,60 @@ export default function OTPConfirmScreen() {
 
     if (text && index < OTP_LENGTH - 1) {
       inputRefs.current[index + 1]?.focus();
-    }
-    if (index === OTP_LENGTH - 1 && text) {
-      const otpString = [...newOtp].join("");
-      if (otpString.length === OTP_LENGTH) {
-        handleVerify();
+    } else if (index === OTP_LENGTH - 1 && text) {
+      if (newOtp.every((digit) => digit !== "")) {
+        setTimeout(() => {
+          handleVerify(newOtp);
+        }, 300);
       }
     }
   };
 
   const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
+    if (e.nativeEvent.key === "Backspace") {
+      const newOtp = [...otp];
+
+      if (!otp[index] && index > 0) {
+        newOtp[index - 1] = "";
+        setOtp(newOtp);
+        inputRefs.current[index - 1]?.focus();
+      } else {
+        newOtp[index] = "";
+        setOtp(newOtp);
+      }
     }
   };
 
-  const handleVerify = async () => {
-    const otpString = otp.join("");
-    if (otpString.length !== OTP_LENGTH) {
+  const handleVerify = async (otpArray = otp) => {
+    const hasEmptyFields = otpArray.some((digit) => digit === "");
+    if (hasEmptyFields) {
       appNotification({
         statusCode: 400,
-        message: "Vui lòng nhập đủ 6 chữ số OTP",
+        message: t("otp.otp_ishort"),
       });
       return;
     }
-
     setIsLoading(true);
     try {
       const authApi = new AuthApi();
+      const otpString = otpArray.join("");
       const verifyEmailData: VerifyEmailInterface = {
         email: email,
         otpCode: otpString,
       };
+      console.log(verifyEmailData);
       const response = await authApi.verifyEmail(verifyEmailData);
-      appNotification({
-        statusCode: response.statusCode,
-        message: response.message,
-      });
-      if (response.statusCode === 200) {
+      if (response === true) {
+        appNotification({
+          statusCode: 200,
+          message: t("otp.verifySuccess"),
+        });
         router.replace("/(auth)/login");
+      } else {
+        appNotification(response);
       }
     } catch (error: any) {
-      appNotification({
-        statusCode: error.statusCode || 500,
-        message: error.message || "Có lỗi xảy ra, vui lòng thử lại sau",
-      });
+      appNotification(error);
     } finally {
       setIsLoading(false);
     }
@@ -123,34 +157,21 @@ export default function OTPConfirmScreen() {
   const handleResendOTP = async () => {
     if (!canResend) return;
 
+    setCountdown(60);
+    setCanResend(false);
+    startCountdown();
+
     setIsLoading(true);
     try {
       const authApi = new AuthApi();
-      const response = await authApi.resendOTP({ email });
-      appNotification({
-        statusCode: response.statusCode,
-        message: response.message,
-      });
-      if (response.statusCode === 200) {
-        setCountdown(60);
-        setCanResend(false);
-
-        const timer = setInterval(() => {
-          setCountdown((prev) => {
-            if (prev <= 1) {
-              clearInterval(timer);
-              setCanResend(true);
-              return 0;
-            }
-            return prev - 1;
-          });
-        }, 1000);
-      }
+      await authApi.resendOTP({ email });
     } catch (error: any) {
-      appNotification({
-        statusCode: error.statusCode || 500,
-        message: error.message || "Có lỗi xảy ra, vui lòng thử lại sau",
-      });
+      appNotification(error);
+      setCanResend(true);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     } finally {
       setIsLoading(false);
     }
@@ -160,6 +181,13 @@ export default function OTPConfirmScreen() {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView style={styles.container}>
         <StatusBar style="dark" />
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => router.back()}
@@ -170,9 +198,9 @@ export default function OTPConfirmScreen() {
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.title}>Xác nhận OTP</Text>
+          <Text style={styles.title}>{t("otp.title")}</Text>
           <Text style={styles.subtitle}>
-            Vui lòng nhập mã OTP 6 chữ số đã được gửi đến email {email}
+            {t("otp.description")} {email}
           </Text>
 
           <View style={styles.otpContainer}>
@@ -186,13 +214,15 @@ export default function OTPConfirmScreen() {
                 onKeyPress={(e) => handleKeyPress(e, index)}
                 keyboardType="number-pad"
                 maxLength={1}
-                selectTextOnFocus
+                selectTextOnFocus={false}
+                autoComplete="off"
+                autoCorrect={false}
               />
             ))}
           </View>
 
           <View style={styles.resendContainer}>
-            <Text style={styles.resendText}>Không nhận được mã? </Text>
+            <Text style={styles.resendText}>{t("otp.receive")}</Text>
             <TouchableOpacity
               onPress={handleResendOTP}
               disabled={!canResend || isLoading}
@@ -200,17 +230,20 @@ export default function OTPConfirmScreen() {
               <Text
                 style={[
                   styles.resendButton,
-                  !canResend && styles.resendButtonDisabled,
+                  (!canResend || isLoading) && styles.resendButtonDisabled,
                 ]}
               >
-                {canResend ? "Gửi lại" : `Gửi lại sau ${countdown}s`}
+                {canResend && !isLoading
+                  ? t("otp.resendOtp")
+                  : `${t("otp.resendOtp_after")} ${countdown}s`}
               </Text>
             </TouchableOpacity>
           </View>
 
           <Button
-            title="Xác nhận"
+            title={t("otp.verify")}
             loading={isLoading}
+            disabled={isLoading}
             onPress={handleVerify}
             buttonStyle={styles.button}
           />

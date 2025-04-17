@@ -1,5 +1,6 @@
 {
   "common": {
+    "smartBarber": "スマートバーバー",
     "welcome": "ようこそ",
     "login": "ログイン",
     "register": "登録",
@@ -22,14 +23,61 @@
     "getStarted": "始める"
   },
   "auth": {
-    "email": "メールアドレス",
-    "password": "パスワード",
-    "confirmPassword": "パスワード確認",
-    "forgotPassword": "パスワードをお忘れですか？",
-    "rememberMe": "ログイン状態を保持",
-    "noAccount": "アカウントをお持ちでないですか？",
-    "haveAccount": "すでにアカウントをお持ちですか？",
-    "signIn": "サインイン"
+    "signIn": "サインイン",
+    "signUp": "登録",
+    "account_register_success": "アカウント登録が完了しました",
+    "login": {
+      "title": "おかえりなさい 👋",
+      "description": "ログイン情報を入力してください",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "confirmPassword": "パスワード確認",
+      "forgotPassword": "パスワードをお忘れですか？",
+      "noAccount": "アカウントをお持ちでないですか？",
+      "haveAccount": "すでにアカウントをお持ちですか？",
+      "login_success": "ログイン成功",
+      "email_empty": "メールアドレスを入力してください",
+      "email_invalid": "有効なメールアドレスを入力してください",
+      "password_empty": "パスワードを入力してください",
+      "password_invalid": "有効なパスワードを入力してください",
+      "password_short": "パスワードは6文字以上にする必要があります",
+      "password_match": "パスワードが一致しません"
+    },
+    "register": {
+      "title": "アカウント作成",
+      "description": "アカウント作成の詳細を入力してください",
+      "firstName": "名",
+      "lastName": "姓",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "confirmPassword": "パスワード確認",
+      "haveAccount": "すでにアカウントをお持ちですか？",
+      "login": "ログイン",
+      "register": "登録",
+      "firstName_empty": "名を入力してください",
+      "lastName_empty": "姓を入力してください",
+      "email_empty": "メールアドレスを入力してください",
+      "password_empty": "パスワードを入力してください",
+      "confirmPassword_empty": "確認パスワードを入力してください",
+      "password_short": "パスワードは6文字以上にする必要があります",
+      "password_match": "パスワードが一致しません"
+    }
+  },
+  "otp": {
+    "title": "メールを確認",
+    "description": "メールに送信されたOTPコードを入力してください",
+    "receive": "OTPを受け取っていませんか？ ",
+    "resendOtp": "再送",
+    "resendOtp_after": "OTPを再送するまで",
+    "verify": "確認",
+    "otp_empty": "OTPコードを入力してください",
+    "otp_incorrect": "OTPコードが正しくありません",
+    "otp_ishort": "OTPコードは6文字以上である必要があります",
+    "otp_expired": "OTPコードの有効期限が切れました",
+    "verify_success": "OTPの確認に成功しました"
+  },
+  "user": {
+    "email_existed": "このメールアドレスは既に使用されています"
   },
   "onboarding": {
     "slide1": {

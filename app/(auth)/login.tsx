@@ -27,14 +27,15 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { login } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
 import Toast from "@/components/ui/Toast";
+import { useTranslation } from "react-i18next";
 
 const { height } = Dimensions.get("window");
 
 const Login = () => {
+  const { t } = useTranslation();
   const router = useRouter();
   const dispatch = useDispatch();
   const { appNotification, toast, setToast } = useNotification();
-  console.log("Current toast state:", toast);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [emailError, setEmailError] = useState("");
@@ -144,18 +145,18 @@ const Login = () => {
     setPasswordError("");
 
     if (!email.trim()) {
-      setEmailError("Vui lòng nhập email của bạn");
+      setEmailError(t("auth.login.email_empty"));
       isValid = false;
     } else if (!validateEmail(email)) {
-      setEmailError("Email không hợp lệ");
+      setEmailError(t("auth.login.email_invalid"));
       isValid = false;
     }
 
     if (!password.trim()) {
-      setPasswordError("Vui lòng nhập mật khẩu");
+      setPasswordError(t("auth.login.password_empty"));
       isValid = false;
     } else if (password.length < 6) {
-      setPasswordError("Mật khẩu phải có ít nhất 6 ký tự");
+      setPasswordError(t("auth.login.password_short"));
       isValid = false;
     }
 
@@ -172,7 +173,6 @@ const Login = () => {
         password,
       };
       const response = await authApi.login(loginData);
-      console.log("Login response:", response);
 
       if (response?.statusCode >= 200 && response?.statusCode < 300) {
         dispatch(
@@ -257,15 +257,15 @@ const Login = () => {
             >
               <View className="gap-6 mb-6">
                 <Text className="text-4xl font-bold text-primary">
-                  Welcome Back 👋
+                  {t("auth.login.title")}
                 </Text>
                 <Text className="text-lg text-gray-500">
-                  Please login to continue
+                  {t("auth.login.description")}
                 </Text>
               </View>
 
               <Input
-                placeholder="Enter your email"
+                placeholder={t("auth.login.email")}
                 icon={<Icon name="mail" size={26} strokeWidth={1.6} />}
                 keyboardType="email-address"
                 value={email}
@@ -278,7 +278,7 @@ const Login = () => {
               )}
 
               <Input
-                placeholder="Enter your password"
+                placeholder={t("auth.login.password")}
                 icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
                 secureTextEntry={!showPassword}
                 value={password}
@@ -304,19 +304,27 @@ const Login = () => {
                 onPress={() => router.replace("/(auth)/forgotPassword")}
               >
                 <Text className="text-primary text-right font-medium my-3">
-                  Forgot Password?
+                  {t("auth.login.forgotPassword")}
                 </Text>
               </TouchableOpacity>
 
-              <Button title="Login" loading={isLoading} onPress={handleLogin} />
+              <Button
+                title={t("auth.signIn")}
+                loading={isLoading}
+                onPress={handleLogin}
+              />
 
               <View className="flex-row justify-center mt-6">
-                <Text className="text-gray-500">Don't have an account? </Text>
+                <Text className="text-gray-500">
+                  {t("auth.login.noAccount")}{" "}
+                </Text>
                 <TouchableOpacity
                   activeOpacity={0.7}
                   onPress={() => router.push("/(auth)/register")}
                 >
-                  <Text className="text-primary font-bold">Register</Text>
+                  <Text className="text-primary font-bold">
+                    {t("auth.signUp")}
+                  </Text>
                 </TouchableOpacity>
               </View>
             </Animated.View>
