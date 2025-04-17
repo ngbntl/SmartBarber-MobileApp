@@ -1,6 +1,6 @@
 {
   "common": {
-    "welcome": "Welcome",
+    "smartBarber": "Smart Barber",
     "login": "Login",
     "register": "Register",
     "logout": "Logout",
@@ -22,26 +22,62 @@
     "getStarted": "Get Started"
   },
   "auth": {
+    "signIn": "Sign In",
+    "signUp": "Register",
+    "account_register_success": "Account registered successfully",
     "login": {
+      "title": "Welcome Back 👋",
+      "description": "Please enter your details to login",
       "email": "Email",
       "password": "Password",
       "confirmPassword": "Confirm Password",
       "forgotPassword": "Forgot Password?",
-      "rememberMe": "Remember Me",
       "noAccount": "Don't have an account?",
       "haveAccount": "Already have an account?",
-      "signIn": "Sign In",
-      "login_success": "Login successful"
+      "login_success": "Login successful",
+      "email_empty": "Please enter your email",
+      "email_invalid": "Please enter a valid email",
+      "password_empty": "Please enter your password",
+      "password_invalid": "Please enter a valid password",
+      "password_short": "Password must be at least 6 characters long",
+      "password_match": "Passwords do not match"
     },
-    "account_login_failed": "Login failed. Please check your credentials and try again.",
-    "email": "Email",
-    "password": "Password",
-    "confirmPassword": "Confirm Password",
-    "forgotPassword": "Forgot Password?",
-    "rememberMe": "Remember Me",
-    "noAccount": "Don't have an account?",
-    "haveAccount": "Already have an account?",
-    "signIn": "Sign In"
+    "register": {
+      "title": "Create an Account",
+      "description": "Please enter your details to create an account",
+      "firstName": "First Name",
+      "lastName": "Last Name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "haveAccount": "Already have an account?",
+      "login": "Login",
+      "register": "Register",
+      "firstName_empty": "Please enter your first name",
+      "lastName_empty": "Please enter your last name",
+      "email_empty": "Please enter your email",
+      "password_empty": "Please enter your password",
+      "confirmPassword_empty": "Please enter your confirm password",
+      "password_short": "Password must be at least 6 characters long",
+      "password_match": "Passwords do not match"
+    }
+  },
+  "otp": {
+    "title": "Verify Your Email",
+    "description": "Enter the OTP sent to your email",
+    "receive": "Didn't receive the OTP? ",
+    "resendOtp": "Resend",
+    "resendOtp_after": "Resend OTP in",
+    "verify": "Verify",
+    "otp_empty": "Please enter the OTP",
+    "otp_in321234correct": "Incorrect OTP",
+    "otp_expired": "OTP has expired",
+    "otp_ishort": "OTP must be at least 6 characters long",
+
+    "verify_success": "OTP verified successfully"
+  },
+  "user": {
+    "email_existed": "Email already exists"
   },
   "onboarding": {
     "slide1": {

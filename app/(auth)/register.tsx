@@ -3,13 +3,11 @@ import {
   View,
   Image,
   TouchableOpacity,
-  KeyboardAvoidingView,
   Platform,
   ScrollView,
   Animated,
   Dimensions,
   Keyboard,
-  Alert,
 } from "react-native";
 import React, { useRef, useState, useEffect } from "react";
 import Button from "@/components/button/Button";
@@ -23,16 +21,16 @@ import Show from "@/assets/icons/Show";
 import AuthApi from "@/api/auth";
 import { RegisterInterface } from "@/types/auth";
 import { useDispatch } from "react-redux";
-import { login } from "@/store/authSlice";
 import Toast from "@/components/ui/Toast";
 import { useNotification } from "@/hooks/useNotification";
+import { useTranslation } from "react-i18next";
 
 const { height } = Dimensions.get("window");
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const dispatch = useDispatch();
   const { appNotification, toast, setToast } = useNotification();
+  const { t } = useTranslation();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -60,9 +58,6 @@ export default function RegisterScreen() {
       Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
       (event) => {
         setKeyboardOpen(true);
-
-        const keyboardHeight = event.endCoordinates.height;
-
         Animated.parallel([
           Animated.timing(headerHeight, {
             toValue: height * 0.15,
@@ -156,45 +151,43 @@ export default function RegisterScreen() {
     setConfirmPasswordError("");
 
     if (!firstName.trim()) {
-      setFirstNameError("Vui lòng nhập họ");
+      setFirstNameError(t("auth.register.firstName_empty"));
       isValid = false;
     }
 
     if (!lastName.trim()) {
-      setLastNameError("Vui lòng nhập tên");
+      setLastNameError(t("auth.register.lastName_empty"));
       isValid = false;
     }
 
     if (!email.trim()) {
-      setEmailError("Vui lòng nhập email");
+      setEmailError(t("auth.register.email_empty"));
       isValid = false;
     } else if (!validateEmail(email)) {
-      setEmailError("Email không hợp lệ");
+      setEmailError(t("auth.register.email_invalid"));
       isValid = false;
     }
 
     if (!password.trim()) {
-      setPasswordError("Vui lòng nhập mật khẩu");
+      setPasswordError(t("auth.register.password_empty"));
       isValid = false;
     } else if (password.length < 8) {
-      setPasswordError("Mật khẩu phải có ít nhất 8 ký tự");
+      setPasswordError(t("auth.register.password_short"));
       isValid = false;
     } else {
       const passwordRegex =
         /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
       if (!passwordRegex.test(password)) {
-        setPasswordError(
-          "Mật khẩu phải chứa ít nhất 1 chữ cái, 1 số và 1 ký tự đặc biệt"
-        );
+        setPasswordError(t("auth.register.password_invalid"));
         isValid = false;
       }
     }
 
     if (!confirmPassword.trim()) {
-      setConfirmPasswordError("Vui lòng xác nhận mật khẩu");
+      setConfirmPasswordError(t("auth.register.confirmPassword_empty"));
       isValid = false;
     } else if (password !== confirmPassword) {
-      setConfirmPasswordError("Mật khẩu xác nhận không khớp");
+      setConfirmPasswordError(t("auth.register.password_match"));
       isValid = false;
     }
 
@@ -217,27 +210,17 @@ export default function RegisterScreen() {
       const response = await authApi.register(registerData);
 
       if (response) {
-        appNotification({
-          statusCode: 200,
-          message: "Đăng ký thành công",
-        });
+        appNotification(response);
         setTimeout(() => {
           router.replace(
             `/(auth)/otpConfirm?email=${encodeURIComponent(email)}`
           );
         }, 1500);
       } else {
-        appNotification({
-          statusCode: 400,
-          message: "Có lỗi xảy ra, vui lòng thử lại sau",
-        });
+        appNotification(response);
       }
     } catch (error) {
-      console.error("Register error:", error);
-      appNotification({
-        statusCode: 500,
-        message: "Có lỗi xảy ra, vui lòng thử lại sau",
-      });
+      appNotification(error, _error);
     } finally {
       setIsLoading(false);
     }
@@ -279,7 +262,7 @@ export default function RegisterScreen() {
             />
             {!keyboardOpen && (
               <Text className="text-white text-xl font-bold mt-2 text-center">
-                Smart Barber
+                {t("common.smartBarber")}
               </Text>
             )}
           </Animated.View>
@@ -301,17 +284,17 @@ export default function RegisterScreen() {
           >
             <View className="gap-3">
               <Text className="text-4xl font-bold text-primary">
-                Create Account ✌️
+                {t("auth.register.title")}
               </Text>
               <Text className="text-lg text-gray-500">
-                Please fill in your details
+                {t("auth.register.description")}
               </Text>
             </View>
 
             <View className="flex-row gap-4 -mb-1">
               <View className="flex-1">
                 <Input
-                  placeholder="First Name"
+                  placeholder={t("auth.register.firstName")}
                   icon={<Icon name="user" size={24} strokeWidth={1.6} />}
                   value={firstName}
                   onChangeText={setFirstName}
@@ -325,7 +308,7 @@ export default function RegisterScreen() {
               </View>
               <View className="flex-1">
                 <Input
-                  placeholder="Last Name"
+                  placeholder={t("auth.register.lastName")}
                   icon={<Icon name="user" size={24} strokeWidth={1.6} />}
                   value={lastName}
                   onChangeText={setLastName}
@@ -340,7 +323,7 @@ export default function RegisterScreen() {
             </View>
 
             <Input
-              placeholder="Email"
+              placeholder={t("auth.register.email")}
               icon={<Icon name="mail" size={26} strokeWidth={1.6} />}
               keyboardType="email-address"
               value={email}
@@ -353,7 +336,7 @@ export default function RegisterScreen() {
             )}
 
             <Input
-              placeholder="Password"
+              placeholder={t("auth.register.password")}
               icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
               secureTextEntry={!showPassword}
               value={password}
@@ -373,7 +356,7 @@ export default function RegisterScreen() {
             )}
 
             <Input
-              placeholder="Confirm Password"
+              placeholder={t("auth.register.confirmPassword")}
               icon={<Icon name="lock" size={26} strokeWidth={1.6} />}
               secureTextEntry={!showConfirmPassword}
               value={confirmPassword}
@@ -394,7 +377,7 @@ export default function RegisterScreen() {
               </Text>
             )}
             <Button
-              title="Register"
+              title={t("auth.register.register")}
               loading={isLoading}
               onPress={handleRegister}
               buttonStyle={{
@@ -403,12 +386,16 @@ export default function RegisterScreen() {
             />
 
             <View className="flex-row justify-center mt-6">
-              <Text className="text-gray-500">Already have an account? </Text>
+              <Text className="text-gray-500">
+                {t("auth.register.haveAccount")}
+              </Text>
               <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/(auth)/login")}
               >
-                <Text className="text-primary font-bold">Login</Text>
+                <Text className="text-primary font-bold">
+                  {t("auth.register.login")}
+                </Text>
               </TouchableOpacity>
             </View>
           </Animated.View>

@@ -183,14 +183,14 @@ export default function OnboardingScreen() {
       {currentIndex == data.length - 1 && (
         <View className="absolute flex-row left-1/2 -translate-x-1/2 gap-1 bottom-8">
           <Text className="text-white text-center">
-            {t("auth.haveAccount")}
+            {t("auth.login.haveAccount")}
           </Text>
           <Pressable
             onPress={() => {
               router.replace("/(auth)/login");
             }}
           >
-            <Text className="text-button font-bold"> {t("auth.signIn")}</Text>
+            <Text className="text-button font-bold"> {t("common.login")}</Text>
           </Pressable>
         </View>
       )}

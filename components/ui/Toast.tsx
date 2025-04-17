@@ -6,7 +6,10 @@ import {
   StyleSheet,
   Platform,
   TouchableOpacity,
+  Dimensions,
+  StatusBar,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Colors } from "@/constants/Colors";
 import Icon from "@/assets/icons";
 
@@ -15,6 +18,7 @@ interface ToastProps {
   type?: "success" | "error" | "warning" | "info";
   duration?: number;
   onClose?: () => void;
+  position?: "top" | "bottom";
 }
 
 const Toast = ({
@@ -22,34 +26,75 @@ const Toast = ({
   type = "info",
   duration = 3000,
   onClose,
+  position = "top",
 }: ToastProps) => {
   const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(
+    new Animated.Value(position === "top" ? -100 : 100)
+  ).current;
   const progress = useRef(new Animated.Value(1)).current;
+  const insets = useSafeAreaInsets();
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const statusBarHeight = StatusBar.currentHeight || 0;
 
   useEffect(() => {
-    Animated.sequence([
+    // Show toast
+    Animated.parallel([
       Animated.timing(opacity, {
         toValue: 1,
         duration: 300,
         useNativeDriver: true,
       }),
-      Animated.timing(progress, {
+      Animated.timing(translateY, {
         toValue: 0,
-        duration: duration,
-        useNativeDriver: false,
+        duration: 300,
+        useNativeDriver: true,
       }),
-    ]).start(() => {
+    ]).start();
+
+    // Start progress bar
+    Animated.timing(progress, {
+      toValue: 0,
+      duration: duration,
+      useNativeDriver: false,
+    }).start();
+
+    // Auto dismiss after duration
+    timeoutRef.current = setTimeout(() => {
       handleClose();
-    });
-  }, [opacity, progress, duration]);
+    }, duration);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [duration]);
 
   const handleClose = () => {
-    Animated.timing(opacity, {
-      toValue: 0,
-      duration: 300,
-      useNativeDriver: true,
-    }).start(() => {
-      onClose?.();
+    // Clear timeout if closing manually
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+
+    // Hide toast with animation
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translateY, {
+        toValue: position === "top" ? -100 : 100,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      // Call the onClose callback after animation completes
+      if (onClose) {
+        onClose();
+      }
     });
   };
 
@@ -105,6 +150,23 @@ const Toast = ({
     }
   };
 
+  // Calculate top position based on platform and safe areas
+  const getToastPosition = () => {
+    if (position === "bottom") {
+      return {
+        top: undefined,
+        bottom: insets.bottom > 0 ? insets.bottom + 10 : 20,
+      };
+    } else {
+      // For top position
+      const safeTopMargin = Math.max(insets.top, statusBarHeight);
+      return {
+        top: safeTopMargin + 10,
+        bottom: undefined,
+      };
+    }
+  };
+
   return (
     <Animated.View
       style={[
@@ -112,23 +174,23 @@ const Toast = ({
         {
           opacity,
           backgroundColor: getBackgroundColor(),
-          transform: [
-            {
-              translateY: opacity.interpolate({
-                inputRange: [0, 1],
-                outputRange: [-100, 0],
-              }),
-            },
-          ],
+          transform: [{ translateY }],
+          ...getToastPosition(),
         },
       ]}
     >
       <View style={styles.content}>
         {getIcon()}
-        <Text style={[styles.message, { color: getTextColor() }]}>
+        <Text
+          style={[styles.message, { color: getTextColor() }]}
+          numberOfLines={2}
+        >
           {message}
         </Text>
-        <TouchableOpacity onPress={handleClose}>
+        <TouchableOpacity
+          onPress={handleClose}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Icon name="close" size={20} color={getTextColor()} />
         </TouchableOpacity>
       </View>
@@ -148,25 +210,25 @@ const Toast = ({
   );
 };
 
+const { width } = Dimensions.get("window");
+
 const styles = StyleSheet.create({
   container: {
     position: "absolute",
-    top: Platform.OS === "ios" ? 60 : 20,
-    left: 20,
-    right: 20,
+    left: width * 0.05,
+    width: width * 0.9,
     padding: 12,
     borderRadius: 8,
     zIndex: 9999,
-    elevation: 9999,
     ...Platform.select({
       ios: {
         shadowColor: "#000",
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.15,
-        shadowRadius: 2,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
       },
       android: {
-        elevation: 2,
+        elevation: 5,
       },
     }),
   },

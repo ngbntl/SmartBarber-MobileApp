@@ -92,7 +92,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   dropdown: {
-    backgroundColor: Colors.white,
+    backgroundColor: "white",
     borderRadius: 12,
     padding: 8,
     minWidth: 150,

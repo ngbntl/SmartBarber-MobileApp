@@ -1,6 +1,7 @@
 {
   "common": {
     "welcome": "Chào mừng",
+    "smartBarber": "Smart Barber",
     "login": "Đăng nhập",
     "register": "Đăng ký",
     "logout": "Đăng xuất",
@@ -15,31 +16,69 @@
     "previous": "Trước đó",
     "search": "Tìm kiếm",
     "loading": "Đang tải...",
-    "error": "Có lỗi xảy ra, vui lòng thử lại sau",
+    "error": "Có lỗi xảy ra",
     "success": "Thành công",
     "warning": "Cảnh báo",
     "info": "Thông tin",
     "getStarted": "Bắt đầu"
   },
   "auth": {
+    "signIn": "Đăng nhập",
+    "signUp": "Đăng ký",
+    "account_register_success": "Đăng ký tài khoản thành công",
     "login": {
+      "title": "Chào mừng trở lại 👋",
+      "description": "Vui lòng nhập thông tin để đăng nhập",
       "email": "Email",
       "password": "Mật khẩu",
       "confirmPassword": "Xác nhận mật khẩu",
       "forgotPassword": "Quên mật khẩu?",
-      "rememberMe": "Ghi nhớ đăng nhập",
       "noAccount": "Chưa có tài khoản?",
       "haveAccount": "Đã có tài khoản?",
-      "signIn": "Đăng nhập",
-      "login_success": "Đăng nhập thành công"
+      "login_success": "Đăng nhập thành công",
+      "email_empty": "Vui lòng nhập email",
+      "email_invalid": "Vui lòng nhập email hợp lệ",
+      "password_empty": "Vui lòng nhập mật khẩu",
+      "password_invalid": "Vui lòng nhập mật khẩu hợp lệ",
+      "password_short": "Mật khẩu phải có ít nhất 6 ký tự",
+      "password_match": "Mật khẩu không khớp"
     },
     "account_login_failed": "Đăng nhập thất bại. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
     "register": {
+      "title": "Tạo tài khoản",
+      "description": "Vui lòng nhập thông tin để tạo tài khoản",
+      "firstName": "Tên",
+      "lastName": "Họ",
       "email": "Email",
       "password": "Mật khẩu",
       "confirmPassword": "Xác nhận mật khẩu",
-      "signUp": "Đăng ký"
+      "haveAccount": "Đã có tài khoản?",
+      "login": "Đăng nhập",
+      "register": "Đăng ký",
+      "firstName_empty": "Vui lòng nhập tên của bạn",
+      "lastName_empty": "Vui lòng nhập họ của bạn",
+      "email_empty": "Vui lòng nhập email",
+      "password_empty": "Vui lòng nhập mật khẩu",
+      "confirmPassword_empty": "Vui lòng xác nhận mật khẩu",
+      "password_short": "Mật khẩu phải có ít nhất 6 ký tự",
+      "password_match": "Mật khẩu không khớp"
     }
+  },
+  "otp": {
+    "title": "Xác thực Email của bạn",
+    "description": "Nhập mã OTP đã được gửi đến email",
+    "receive": "Không nhận được OTP? ",
+    "resendOtp": "Gửi lại",
+    "resendOtp_after": "Gửi lại OTP trong",
+    "verify": "Xác thực",
+    "otp_empty": "Vui lòng nhập mã OTP",
+    "otp_ishort": "Mã OTP phải có ít nhất 6 ký tự",
+    "otp_incorrect": "Mã OTP không chính xác",
+    "otp_expired": "Mã OTP đã hết hạn",
+    "verify_success": "Xác thực OTP thành công"
+  },
+  "user": {
+    "email_existed": "Email đã tồn tại"
   },
   "onboarding": {
     "slide1": {
