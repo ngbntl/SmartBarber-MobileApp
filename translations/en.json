@@ -21,6 +21,25 @@
     "info": "Info",
     "getStarted": "Get Started"
   },
+  "time": {
+    "just_now": "Just now",
+    "minutes_ago": "{{count}} minute ago",
+    "minutes_ago_plural": "{{count}} minutes ago",
+    "hours_ago": "{{count}} hour ago",
+    "hours_ago_plural": "{{count}} hours ago",
+    "days_ago": "{{count}} day ago",
+    "days_ago_plural": "{{count}} days ago",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "appointment_passed": "Appointment time has passed",
+    "countdown_minutes": "{{minutes}} minutes until appointment",
+    "countdown_hours_only": "{{hours}} hours until appointment",
+    "countdown_hours_minutes": "{{hours}} hours {{minutes}} minutes until appointment",
+    "countdown_days_only": "{{days}} days until appointment",
+    "countdown_days_hours": "{{days}} days {{hours}} hours until appointment",
+    "countdown_days_hours_minutes": "{{days}} days {{hours}} hours {{minutes}} minutes until appointment"
+  },
   "auth": {
     "signIn": "Sign In",
     "signUp": "Register",
@@ -70,10 +89,9 @@
     "resendOtp_after": "Resend OTP in",
     "verify": "Verify",
     "otp_empty": "Please enter the OTP",
-    "otp_in321234correct": "Incorrect OTP",
+    "otp_incorrect": "Incorrect OTP",
     "otp_expired": "OTP has expired",
-    "otp_ishort": "OTP must be at least 6 characters long",
-
+    "otp_short": "OTP must be at least 6 characters long",
     "verify_success": "OTP verified successfully"
   },
   "user": {

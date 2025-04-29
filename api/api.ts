@@ -19,7 +19,7 @@ class Api {
     console.log("API Data:", data);
 
     // Lấy token từ Redux store
-    const token = store.getState().auth.user?.token;
+    const token = store.getState().auth.user?.accessToken;
     const options: RequestInit = {
       method,
       headers: {

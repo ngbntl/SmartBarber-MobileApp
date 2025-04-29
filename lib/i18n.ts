@@ -35,6 +35,8 @@ i18n.use(initReactI18next).init({
     useSuspense: false,
   },
   supportedLngs: supportedLanguages,
+  saveMissing: false,
+  missingKeyHandler: () => {},
 });
 
 export default i18n;

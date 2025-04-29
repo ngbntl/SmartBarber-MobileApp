@@ -22,6 +22,22 @@
     "info": "情報",
     "getStarted": "始める"
   },
+  "time": {
+    "just_now": "たった今",
+    "minutes_ago": "{{count}}分前",
+    "hours_ago": "{{count}}時間前",
+    "days_ago": "{{count}}日前",
+    "today": "今日",
+    "yesterday": "昨日",
+    "tomorrow": "明日",
+    "appointment_passed": "予約時間は過ぎました",
+    "countdown_minutes": "予約まであと{{minutes}}分",
+    "countdown_hours_only": "予約まであと{{hours}}時間",
+    "countdown_hours_minutes": "予約まであと{{hours}}時間{{minutes}}分",
+    "countdown_days_only": "予約まであと{{days}}日",
+    "countdown_days_hours": "予約まであと{{days}}日{{hours}}時間",
+    "countdown_days_hours_minutes": "予約まであと{{days}}日{{hours}}時間{{minutes}}分"
+  },
   "auth": {
     "signIn": "サインイン",
     "signUp": "登録",

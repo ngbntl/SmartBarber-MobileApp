@@ -24,10 +24,12 @@ import AuthApi from "@/api/auth";
 import { SignInInterface } from "@/types/auth";
 import { useDispatch } from "react-redux";
 import { useLanguage } from "@/hooks/useLanguage";
-import { login } from "@/store/authSlice";
+import { login, setUserInfo } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
 import Toast from "@/components/ui/Toast";
 import { useTranslation } from "react-i18next";
+import { saveTokens } from "@/utils/secureStore";
+import UserApi from "@/api/userApi";
 
 const { height } = Dimensions.get("window");
 
@@ -173,17 +175,46 @@ const Login = () => {
         password,
       };
       const response = await authApi.login(loginData);
+      if (response && response.error) {
+        appNotification(response);
+        return;
+      }
+      if (response) {
+        const accessToken = response.accessToken || "";
+        const refreshToken = response.refreshToken || "";
 
-      if (response?.statusCode >= 200 && response?.statusCode < 300) {
+        await saveTokens(accessToken, refreshToken);
+
         dispatch(
           login({
             username: email,
-            token: response.token,
+            accessToken: accessToken,
           })
         );
-        setTimeout(() => {
-          router.replace("/(tabs)");
-        }, 1500);
+
+        try {
+          const userApi = new UserApi();
+          const userInfo = await userApi.getUserInfo();
+
+          if (userInfo) {
+            dispatch(setUserInfo(userInfo));
+
+            setTimeout(() => {
+              const userRole = userInfo.roles;
+              if (userRole === "system_admin") {
+                // router.replace("/(admin)");
+              } else if (userRole === "system_staff") {
+                router.replace("/(staffs)");
+              } else if (userRole === "system_user") {
+                router.replace("/(users)");
+              }
+            }, 1500);
+          }
+        } catch (userError) {
+          setTimeout(() => {
+            router.replace("/(tabs)");
+          }, 1500);
+        }
       } else {
         appNotification(response);
       }

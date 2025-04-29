@@ -8,6 +8,9 @@ import UserIcon from "./User";
 import CheckIcon from "./Check";
 import CloseIcon from "./Close";
 import AlertIcon from "./Alert";
+import NotiIcon from "./Notification";
+import ScissorsIcon from "./Scissors";
+import CalendarIcon from "./Calendar";
 const icons: { [key: string]: React.ComponentType<any> } = {
   backArrow: BackArrow,
   mail: Mail,
@@ -17,6 +20,9 @@ const icons: { [key: string]: React.ComponentType<any> } = {
   close: CloseIcon,
   check: CheckIcon,
   alert: AlertIcon,
+  noti: NotiIcon,
+  scissors: ScissorsIcon,
+  calendar: CalendarIcon,
 };
 
 const Icon = ({

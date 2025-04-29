@@ -6,7 +6,7 @@ import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 
-export default function TabLayout() {
+export default function UsersTabLayout() {
   const colorScheme = useColorScheme();
 
   return (
@@ -20,29 +20,16 @@ export default function TabLayout() {
             backgroundColor: "#FFFFFF",
             elevation: 0,
             shadowOpacity: 0.1,
-            height: 75, // Tăng chiều cao từ 60 lên 75
-            paddingBottom: 10, // Tăng padding bottom từ 5 lên 10
-            paddingTop: 5, // Thêm padding top để cân đối
-            // Đẩy tab bar lên trên gạch ngang iPhone
-            borderTopWidth: 1,
-            borderTopColor: "#f1f1f1",
+            height: 60,
+            paddingBottom: 5,
           },
           android: {
             backgroundColor: "#FFFFFF",
             elevation: 8,
-            height: 65, // Tăng chiều cao từ 60 lên 65
-            paddingBottom: 8, // Tăng padding bottom từ 5 lên 8
-            paddingTop: 5, // Thêm padding top để cân đối
+            height: 60,
+            paddingBottom: 5,
           },
         }),
-        // Điều chỉnh kích thước và vị trí của icon và label
-        tabBarIconStyle: {
-          marginTop: 5,
-        },
-        tabBarLabelStyle: {
-          marginBottom: Platform.OS === "ios" ? 10 : 5,
-          fontSize: 12,
-        },
       }}
     >
       <Tabs.Screen
@@ -59,9 +46,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="booking"
+        name="appointments"
         options={{
-          title: "Booking",
+          title: "Appointments",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
@@ -72,12 +59,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="notifications"
         options={{
-          title: "Search",
+          title: "Notifications",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? "search" : "search-outline"}
+              name={focused ? "notifications" : "notifications-outline"}
               size={24}
               color={color}
             />
@@ -85,7 +72,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="settings"
         options={{
           title: "Account",
           tabBarIcon: ({ color, size, focused }) => (

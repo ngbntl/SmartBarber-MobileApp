@@ -22,6 +22,22 @@
     "info": "Thông tin",
     "getStarted": "Bắt đầu"
   },
+  "time": {
+    "just_now": "Vừa xong",
+    "minutes_ago": "{{count}} phút trước",
+    "hours_ago": "{{count}} giờ trước",
+    "days_ago": "{{count}} ngày trước",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "tomorrow": "Ngày mai",
+    "appointment_passed": "Đã qua thời gian hẹn",
+    "countdown_minutes": "Còn {{minutes}} phút nữa đến lịch hẹn",
+    "countdown_hours_only": "Còn {{hours}} giờ nữa đến lịch hẹn",
+    "countdown_hours_minutes": "Còn {{hours}} giờ {{minutes}} phút nữa đến lịch hẹn",
+    "countdown_days_only": "Còn {{days}} ngày nữa đến lịch hẹn",
+    "countdown_days_hours": "Còn {{days}} ngày {{hours}} giờ nữa đến lịch hẹn",
+    "countdown_days_hours_minutes": "Còn {{days}} ngày {{hours}} giờ {{minutes}} phút nữa đến lịch hẹn"
+  },
   "auth": {
     "signIn": "Đăng nhập",
     "signUp": "Đăng ký",
@@ -79,6 +95,11 @@
   },
   "user": {
     "email_existed": "Email đã tồn tại"
+  },
+  "home": {
+    "welcome": "Xin chào",
+    "upcoming": "Lịch hẹn sắp tới",
+    "view_all": "Xem tất cả"
   },
   "onboarding": {
     "slide1": {
