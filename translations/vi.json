@@ -103,16 +103,16 @@
   },
   "onboarding": {
     "slide1": {
-      "title": "Chào mừng đến với ứng dụng",
-      "description": "Khám phá những tính năng tuyệt vời của chúng tôi"
+      "title": "Tạo phong cách riêng bạn",
+      "description": "Khám phá các kiểu tóc phù hợp khuôn mặt và cá tính"
     },
     "slide2": {
-      "title": "Dễ dàng sử dụng",
-      "description": "Giao diện thân thiện, dễ dàng thao tác"
+      "title": "Đặt lịch nhanh chóng",
+      "description": "Chọn barber, chọn giờ – không xếp hàng, không chờ đợi"
     },
     "slide3": {
-      "title": "Bắt đầu ngay",
-      "description": "Đăng ký tài khoản để trải nghiệm đầy đủ tính năng"
+      "title": "Trải nghiệm barber đỉnh",
+      "description": "Uy tín, đánh giá thật – mang lại trải nghiệm chất lượng"
     }
   }
 }

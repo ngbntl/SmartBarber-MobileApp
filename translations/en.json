@@ -1,5 +1,6 @@
 {
   "common": {
+    "welcome": "Welcome",
     "smartBarber": "Smart Barber",
     "login": "Login",
     "register": "Register",
@@ -44,6 +45,7 @@
     "signIn": "Sign In",
     "signUp": "Register",
     "account_register_success": "Account registered successfully",
+    "account_login_failed": "Login failed. Please check your login information and try again.",
     "login": {
       "title": "Welcome Back 👋",
       "description": "Please enter your details to login",
@@ -89,26 +91,31 @@
     "resendOtp_after": "Resend OTP in",
     "verify": "Verify",
     "otp_empty": "Please enter the OTP",
+    "otp_ishort": "OTP must be at least 6 characters long",
     "otp_incorrect": "Incorrect OTP",
     "otp_expired": "OTP has expired",
-    "otp_short": "OTP must be at least 6 characters long",
     "verify_success": "OTP verified successfully"
   },
   "user": {
     "email_existed": "Email already exists"
   },
+  "home": {
+    "welcome": "Hello",
+    "upcoming": "Upcoming appointments",
+    "view_all": "View all"
+  },
   "onboarding": {
     "slide1": {
-      "title": "Welcome to the App",
-      "description": "Discover our amazing features"
+      "title": "Create your own style",
+      "description": "Discover haircuts that match your face shape and personality"
     },
     "slide2": {
-      "title": "Easy to Use",
-      "description": "User-friendly interface, easy to operate"
+      "title": "Book appointments quickly",
+      "description": "Choose a barber, choose a time – no queues, no waiting"
     },
     "slide3": {
-      "title": "Get Started",
-      "description": "Register an account to experience full features"
+      "title": "Experience top barbers",
+      "description": "Reputable, honest reviews – delivering quality experiences"
     }
   }
 }
