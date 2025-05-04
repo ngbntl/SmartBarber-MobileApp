@@ -26,12 +26,14 @@ import { Colors } from "@/constants/Colors";
 import { useState } from "react";
 import LanguageDropdown from "@/components/ui/LanguageDropdown";
 import { useLanguage } from "@/hooks/useLanguage";
+import LottieView from "lottie-react-native";
 
 interface OnboardingItem {
   id: number;
   title: string;
   description: string;
   image: any;
+  isLottie: boolean;
 }
 
 export default function OnboardingScreen() {
@@ -133,11 +135,35 @@ export default function OnboardingScreen() {
     });
     return (
       <View style={[styles.itemContainer, { width: SCREEN_WIDTH }]}>
-        <Animated.Image
-          source={item.image}
-          style={imageAnimationStyle}
-          resizeMode="contain"
-        />
+        {item.isLottie ? (
+          <Animated.View style={imageAnimationStyle}>
+            <LottieView
+              source={item.image}
+              style={{
+                width: SCREEN_WIDTH * 0.8,
+                height: SCREEN_WIDTH * 0.8,
+                backgroundColor: Colors.primary,
+                borderRadius: 20,
+              }}
+              autoPlay
+              loop
+              resizeMode="contain"
+            />
+          </Animated.View>
+        ) : (
+          <Animated.Image
+            source={item.image}
+            style={[
+              imageAnimationStyle,
+              {
+                width: SCREEN_WIDTH * 0.8,
+                height: SCREEN_WIDTH * 0.8,
+                borderRadius: 20,
+              },
+            ]}
+            resizeMode="contain"
+          />
+        )}
         <Animated.View style={textAnimationStyle}>
           <Text className="text-center text-3xl text-white font-bold">
             {t(`onboarding.slide${index + 1}.title`)}

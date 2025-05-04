@@ -22,6 +22,22 @@
     "info": "情報",
     "getStarted": "始める"
   },
+  "time": {
+    "just_now": "たった今",
+    "minutes_ago": "{{count}}分前",
+    "hours_ago": "{{count}}時間前",
+    "days_ago": "{{count}}日前",
+    "today": "今日",
+    "yesterday": "昨日",
+    "tomorrow": "明日",
+    "appointment_passed": "予約時間は過ぎました",
+    "countdown_minutes": "予約まであと{{minutes}}分",
+    "countdown_hours_only": "予約まであと{{hours}}時間",
+    "countdown_hours_minutes": "予約まであと{{hours}}時間{{minutes}}分",
+    "countdown_days_only": "予約まであと{{days}}日",
+    "countdown_days_hours": "予約まであと{{days}}日{{hours}}時間",
+    "countdown_days_hours_minutes": "予約まであと{{days}}日{{hours}}時間{{minutes}}分"
+  },
   "auth": {
     "signIn": "サインイン",
     "signUp": "登録",
@@ -81,16 +97,16 @@
   },
   "onboarding": {
     "slide1": {
-      "title": "アプリへようこそ",
-      "description": "素晴らしい機能を発見しましょう"
+      "title": "あなた専用のスタイルを作成",
+      "description": "あなたの顔の形と個性に合った髪型を探索"
     },
     "slide2": {
-      "title": "使いやすい",
-      "description": "ユーザーフレンドリーなインターフェース、簡単に操作できます"
+      "title": "迅速な予約",
+      "description": "理容師を選び、時間を選び - 列に並ぶ必要なし、待つ必要なし"
     },
     "slide3": {
-      "title": "始めましょう",
-      "description": "アカウントを登録してすべての機能を体験してください"
+      "title": "トップクラスの理容師を体験",
+      "description": "信頼性のある、正直なレビュー - 品質の高い体験を提供"
     }
   }
 }

@@ -3,13 +3,21 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import { StyleSheet, Text, Image } from "react-native";
-import React, { useEffect } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import React, { useEffect, useRef } from "react";
+import LottieView from "lottie-react-native";
+import { Colors } from "@/constants/Colors";
 
 const IntroScreen = ({ onFinish }: { onFinish: () => void }) => {
   const opacity = useSharedValue(1);
+  const lottieRef = useRef<LottieView>(null);
 
   useEffect(() => {
+    // Play Lottie animation
+    if (lottieRef.current) {
+      lottieRef.current.play();
+    }
+
     const timer = setTimeout(() => {
       opacity.value = withTiming(0, { duration: 500 });
 
@@ -27,9 +35,12 @@ const IntroScreen = ({ onFinish }: { onFinish: () => void }) => {
 
   return (
     <Animated.View style={[styles.container, animatedStyle]}>
-      <Image
-        source={require("@/assets/images/logo.png")}
-        style={[styles.img]}
+      <LottieView
+        ref={lottieRef}
+        source={require("@/assets/lottie/Barber Sign.json")}
+        style={styles.lottie}
+        autoPlay={false}
+        loop={false}
       />
     </Animated.View>
   );
@@ -42,14 +53,14 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#211C84",
+    backgroundColor: Colors.primary,
   },
   text: {
     fontSize: 20,
     fontWeight: "bold",
   },
-  img: {
-    width: 30,
-    height: 30,
+  lottie: {
+    width: 250,
+    height: 250,
   },
 });

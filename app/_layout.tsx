@@ -19,8 +19,9 @@ const RootLayout = () => {
             />
             <Stack.Screen name="(auth)" options={{ headerShown: false }} />
             <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-            {/* <Stack.Screen name="(users)" options={{ headerShown: false }} />
-            <Stack.Screen name="(staffs)" options={{ headerShown: false }} /> */}
+            <Stack.Screen name="(users)" options={{ headerShown: false }} />
+            <Stack.Screen name="(staffs)" options={{ headerShown: false }} />
+            <Stack.Screen name="(admin)" options={{ headerShown: false }} />
           </Stack>
         </I18nextProvider>
       </PersistGate>

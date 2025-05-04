@@ -22,6 +22,22 @@
     "info": "Thông tin",
     "getStarted": "Bắt đầu"
   },
+  "time": {
+    "just_now": "Vừa xong",
+    "minutes_ago": "{{count}} phút trước",
+    "hours_ago": "{{count}} giờ trước",
+    "days_ago": "{{count}} ngày trước",
+    "today": "Hôm nay",
+    "yesterday": "Hôm qua",
+    "tomorrow": "Ngày mai",
+    "appointment_passed": "Đã qua thời gian hẹn",
+    "countdown_minutes": "Còn {{minutes}} phút nữa đến lịch hẹn",
+    "countdown_hours_only": "Còn {{hours}} giờ nữa đến lịch hẹn",
+    "countdown_hours_minutes": "Còn {{hours}} giờ {{minutes}} phút nữa đến lịch hẹn",
+    "countdown_days_only": "Còn {{days}} ngày nữa đến lịch hẹn",
+    "countdown_days_hours": "Còn {{days}} ngày {{hours}} giờ nữa đến lịch hẹn",
+    "countdown_days_hours_minutes": "Còn {{days}} ngày {{hours}} giờ {{minutes}} phút nữa đến lịch hẹn"
+  },
   "auth": {
     "signIn": "Đăng nhập",
     "signUp": "Đăng ký",
@@ -80,18 +96,23 @@
   "user": {
     "email_existed": "Email đã tồn tại"
   },
+  "home": {
+    "welcome": "Xin chào",
+    "upcoming": "Lịch hẹn sắp tới",
+    "view_all": "Xem tất cả"
+  },
   "onboarding": {
     "slide1": {
-      "title": "Chào mừng đến với ứng dụng",
-      "description": "Khám phá những tính năng tuyệt vời của chúng tôi"
+      "title": "Tạo phong cách riêng bạn",
+      "description": "Khám phá các kiểu tóc phù hợp khuôn mặt và cá tính"
     },
     "slide2": {
-      "title": "Dễ dàng sử dụng",
-      "description": "Giao diện thân thiện, dễ dàng thao tác"
+      "title": "Đặt lịch nhanh chóng",
+      "description": "Chọn barber, chọn giờ – không xếp hàng, không chờ đợi"
     },
     "slide3": {
-      "title": "Bắt đầu ngay",
-      "description": "Đăng ký tài khoản để trải nghiệm đầy đủ tính năng"
+      "title": "Trải nghiệm barber đỉnh",
+      "description": "Uy tín, đánh giá thật – mang lại trải nghiệm chất lượng"
     }
   }
 }
