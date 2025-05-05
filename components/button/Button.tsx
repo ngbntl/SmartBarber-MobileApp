@@ -1,4 +1,10 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
 import { ButtonInterface } from "@/types/button";
 import { Colors } from "@/constants/Colors";
@@ -24,7 +30,7 @@ const Button = (button: ButtonInterface) => {
     return <Loading />;
   }
   return (
-    <Pressable
+    <TouchableOpacity
       style={[styles.button, buttonStyle, hasShadow && shadowStyle]}
       className=" justify-center items-center rounded-lg bg-primary"
       onPress={onPress}
@@ -35,7 +41,7 @@ const Button = (button: ButtonInterface) => {
       >
         {title}
       </Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 
@@ -45,7 +51,7 @@ const styles = StyleSheet.create({
   button: {
     borderCurve: "continuous",
     height: 50,
-    borderRadius: 10,
+    borderRadius: 8,
   },
   text: {},
 });
