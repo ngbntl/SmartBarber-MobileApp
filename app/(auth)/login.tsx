@@ -198,22 +198,17 @@ const Login = () => {
 
           if (userInfo) {
             dispatch(setUserInfo(userInfo));
-
-            setTimeout(() => {
-              const userRole = userInfo.roles;
-              if (userRole === "system_admin") {
-                // router.replace("/(admin)");
-              } else if (userRole === "system_staff") {
-                router.replace("/(staffs)");
-              } else if (userRole === "system_user") {
-                router.replace("/(users)");
-              }
-            }, 1500);
+            const userRole = userInfo.roles;
+            if (userRole === "system_admin") {
+              // router.replace("/(admin)");
+            } else if (userRole === "system_staff") {
+              router.replace("/(staffs)");
+            } else if (userRole === "system_user") {
+              router.replace("/(users)");
+            }
           }
         } catch (userError) {
-          setTimeout(() => {
-            router.replace("/(tabs)");
-          }, 1500);
+          router.replace("/(tabs)");
         }
       } else {
         appNotification(response);
@@ -261,11 +256,16 @@ const Login = () => {
             >
               <Image
                 source={require("@/assets/images/logo.png")}
-                className="w-24 h-24"
+                className="w-28 h-28"
                 resizeMode="contain"
+                style={{
+                  shadowColor: "white",
+                  shadowRadius: 10,
+                  shadowOpacity: 0.3,
+                }}
               />
               {!keyboardOpen && (
-                <Text className="text-white text-xl font-bold mt-2 text-center">
+                <Text className="text-white text-2xl font-bold mt-2 text-center shadow-md">
                   Smart Barber
                 </Text>
               )}

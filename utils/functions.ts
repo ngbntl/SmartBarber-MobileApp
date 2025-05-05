@@ -231,3 +231,16 @@ export const isToday = (date: Date | string): boolean => {
     dateObj.getFullYear() === today.getFullYear()
   );
 };
+
+export const formatPrice = (price: number): string => {
+  if (price === null || price === undefined) return "0vnd";
+
+  const roundedPrice = Math.round(price);
+
+  const formattedPrice = roundedPrice.toLocaleString("vi-VN", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+
+  return `${formattedPrice} vnd`;
+};

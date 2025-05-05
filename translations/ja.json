@@ -25,8 +25,11 @@
   "time": {
     "just_now": "たった今",
     "minutes_ago": "{{count}}分前",
+    "minutes_ago_plural": "{{count}}分前",
     "hours_ago": "{{count}}時間前",
+    "hours_ago_plural": "{{count}}時間前",
     "days_ago": "{{count}}日前",
+    "days_ago_plural": "{{count}}日前",
     "today": "今日",
     "yesterday": "昨日",
     "tomorrow": "明日",
@@ -42,6 +45,7 @@
     "signIn": "サインイン",
     "signUp": "登録",
     "account_register_success": "アカウント登録が完了しました",
+    "account_login_failed": "ログインに失敗しました。ログイン情報を確認して再試行してください。",
     "login": {
       "title": "おかえりなさい 👋",
       "description": "ログイン情報を入力してください",
@@ -94,6 +98,18 @@
   },
   "user": {
     "email_existed": "このメールアドレスは既に使用されています"
+  },
+  "home": {
+    "welcome": "こんにちは",
+    "upcoming": "今後の予約",
+    "view_all": "すべて表示",
+    "services": "サービス",
+    "book_now": "今予約する",
+    "try_on_hair": "AIで髪型を試す",
+    "try_on_hair_desc": "AI技術を使って様々な髪型や髪色を試してみましょう",
+    "button_try_on": "今すぐ試す",
+    "new": "新着",
+    "branches": "支店"
   },
   "onboarding": {
     "slide1": {

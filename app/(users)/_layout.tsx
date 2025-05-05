@@ -20,14 +20,14 @@ export default function UsersTabLayout() {
             backgroundColor: "#FFFFFF",
             elevation: 0,
             shadowOpacity: 0.1,
-            height: 60,
-            paddingBottom: 5,
+            height: 70,
+            paddingBottom: 10,
           },
           android: {
             backgroundColor: "#FFFFFF",
             elevation: 8,
-            height: 60,
-            paddingBottom: 5,
+            height: 70,
+            paddingBottom: 10,
           },
         }),
       }}
@@ -48,7 +48,7 @@ export default function UsersTabLayout() {
       <Tabs.Screen
         name="appointments"
         options={{
-          title: "Appointments",
+          title: "Bookings",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}

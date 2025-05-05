@@ -102,7 +102,14 @@
   "home": {
     "welcome": "Hello",
     "upcoming": "Upcoming appointments",
-    "view_all": "View all"
+    "view_all": "View all",
+    "services": "Services",
+    "book_now": "Book now",
+    "try_on_hair": "Try on hair styles with AI",
+    "try_on_hair_desc": "Try on different hair styles and colors using AI technology",
+    "button_try_on": "Try on now",
+    "new": "New",
+    "branches": "Branches"
   },
   "onboarding": {
     "slide1": {

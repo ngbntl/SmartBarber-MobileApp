@@ -1,11 +1,11 @@
 import Api from "./api";
 
-class ServicesApi extends Api {
+class BranchesApi extends Api {
   constructor() {
-    super("services");
+    super("branches");
   }
 
-  async getServices() {
+  async getBranches() {
     try {
       return await this.request("get", "");
     } catch (error) {
@@ -14,4 +14,4 @@ class ServicesApi extends Api {
   }
 }
 
-export default ServicesApi;
+export default BranchesApi;
