@@ -20,7 +20,12 @@
     "success": "成功",
     "warning": "警告",
     "info": "情報",
-    "getStarted": "始める"
+    "getStarted": "始める",
+    "retry": "再試行",
+    "done": "完了",
+    "language": "言語",
+    "yes": "はい",
+    "no": "いいえ"
   },
   "time": {
     "just_now": "たった今",
@@ -48,6 +53,7 @@
     "account_login_failed": "ログインに失敗しました。ログイン情報を確認して再試行してください。",
     "login": {
       "title": "おかえりなさい 👋",
+      "subtitle": "アカウントにログイン",
       "description": "ログイン情報を入力してください",
       "email": "メールアドレス",
       "password": "パスワード",
@@ -61,10 +67,18 @@
       "password_empty": "パスワードを入力してください",
       "password_invalid": "有効なパスワードを入力してください",
       "password_short": "パスワードは6文字以上にする必要があります",
-      "password_match": "パスワードが一致しません"
+      "password_match": "パスワードが一致しません",
+      "emailPlaceholder": "メールアドレス",
+      "passwordPlaceholder": "パスワード",
+      "loginButton": "ログイン",
+      "dontHaveAccount": "アカウントをお持ちでないですか？ ",
+      "invalidEmail": "無効なメール形式",
+      "invalidPassword": "パスワードは8文字以上である必要があります",
+      "emptyField": "この項目は必須です"
     },
     "register": {
       "title": "アカウント作成",
+      "subtitle": "始めるには詳細を入力してください",
       "description": "アカウント作成の詳細を入力してください",
       "firstName": "名",
       "lastName": "姓",
@@ -80,21 +94,39 @@
       "password_empty": "パスワードを入力してください",
       "confirmPassword_empty": "確認パスワードを入力してください",
       "password_short": "パスワードは6文字以上にする必要があります",
-      "password_match": "パスワードが一致しません"
+      "password_match": "パスワードが一致しません",
+      "firstNamePlaceholder": "名",
+      "lastNamePlaceholder": "姓",
+      "emailPlaceholder": "メールアドレス",
+      "passwordPlaceholder": "パスワード",
+      "confirmPasswordPlaceholder": "パスワード確認",
+      "first_name_empty": "名が必要です",
+      "last_name_empty": "姓が必要です",
+      "email_invalid": "無効なメール形式",
+      "password_invalid": "パスワードには少なくとも1つの文字、1つの数字、1つの特殊文字が含まれている必要があります"
+    },
+    "forgotPassword": {
+      "title": "パスワードのリセット",
+      "subtitle": "メールアドレスを入力すると、パスワードをリセットするためのリンクをお送りします",
+      "emailPlaceholder": "メールアドレス",
+      "sendButton": "リセットリンクを送信",
+      "backToLogin": "ログインに戻る",
+      "success": "リセットリンクがメールに送信されました"
     }
   },
   "otp": {
-    "title": "メールを確認",
-    "description": "メールに送信されたOTPコードを入力してください",
-    "receive": "OTPを受け取っていませんか？ ",
+    "title": "認証コード",
+    "description": "メールに送信されたOTPを入力してください",
+    "receive": "コードを受け取っていませんか？ ",
     "resendOtp": "再送",
-    "resendOtp_after": "OTPを再送するまで",
+    "resendOtp_after": "再送まであと ",
     "verify": "確認",
     "otp_empty": "OTPコードを入力してください",
     "otp_incorrect": "OTPコードが正しくありません",
-    "otp_ishort": "OTPコードは6文字以上である必要があります",
+    "otp_ishort": "6桁すべてを入力してください",
     "otp_expired": "OTPコードの有効期限が切れました",
-    "verify_success": "OTPの確認に成功しました"
+    "verify_success": "OTPの確認に成功しました",
+    "verifySuccess": "メールが正常に確認されました"
   },
   "user": {
     "email_existed": "このメールアドレスは既に使用されています"
@@ -124,5 +156,65 @@
       "title": "トップクラスの理容師を体験",
       "description": "信頼性のある、正直なレビュー - 品質の高い体験を提供"
     }
+  },
+  "appointments": {
+    "title": "予約する",
+    "select_branch": "支店を選択",
+    "branch_description": "便利な場所の支店を選んでください",
+    "select_services": "サービスを選択",
+    "service_description": "予約したいサービスを選択してください",
+    "search_services": "サービスを検索",
+    "no_results": "結果が見つかりません",
+    "selected_services": "選択されたサービス",
+    "total_price": "合計金額",
+    "total_duration": "合計時間",
+    "minutes": "分",
+    "complete_previous_step": "前のステップを完了してください",
+    "confirm": "予約を確認",
+    "selected_services_count": "{{count}}つのサービスを選択",
+    "select_datetime_stylist": "日時とスタイリストを選択",
+    "select_stylist": "スタイリストを選択",
+    "selected": "選択済み",
+    "exp": "経験",
+    "years": "年",
+    "customer": "顧客",
+    "today": "今日",
+    "confirm_booking": "予約を確定",
+    "booking_successful": "予約が成功しました",
+    "booking_failed": "予約に失敗しました"
+  },
+  "settings": {
+    "title": "設定",
+    "language": "言語",
+    "notifications": "通知",
+    "profile": "プロフィール",
+    "privacy": "プライバシー",
+    "appearance": "外観",
+    "theme": "テーマ",
+    "dark_mode": "ダークモード",
+    "about": "会社について",
+    "terms": "利用規約",
+    "contact": "お問い合わせ",
+    "version": "バージョン"
+  },
+  "errors": {
+    "something_wrong": "問題が発生しました。後でもう一度お試しください。",
+    "network_error": "ネットワークエラー。接続を確認してください。",
+    "server_error": "サーバーエラー。後でもう一度お試しください。"
+  },
+  "vouchers": {
+    "add_voucher": "バウチャーを追加",
+    "applied_voucher": "バウチャーが適用されました",
+    "enter_voucher_code": "バウチャーコードを入力",
+    "apply": "適用する",
+    "remove": "削除",
+    "applied": "適用済み",
+    "enter_code": "バウチャーコードを入力してください",
+    "invalid_code": "無効なバウチャーコード",
+    "min_amount_required": "{{minAmount}}以上の注文金額が必要です",
+    "available_vouchers": "利用可能なバウチャー",
+    "discount": "割引",
+    "final_price": "最終金額",
+    "no_vouchers": "利用可能なバウチャーがありません"
   }
 }
