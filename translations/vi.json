@@ -20,7 +20,12 @@
     "success": "Thành công",
     "warning": "Cảnh báo",
     "info": "Thông tin",
-    "getStarted": "Bắt đầu"
+    "getStarted": "Bắt đầu",
+    "retry": "Thử lại",
+    "done": "Hoàn thành",
+    "language": "Ngôn ngữ",
+    "yes": "Có",
+    "no": "Không"
   },
   "time": {
     "just_now": "Vừa xong",
@@ -136,5 +141,65 @@
       "title": "Trải nghiệm barber đỉnh",
       "description": "Uy tín, đánh giá thật – mang lại trải nghiệm chất lượng"
     }
+  },
+  "appointments": {
+    "title": "Đặt lịch hẹn",
+    "select_branch": "Chọn chi nhánh",
+    "branch_description": "Chọn chi nhánh thuận tiện cho bạn",
+    "select_services": "Chọn dịch vụ",
+    "service_description": "Chọn dịch vụ bạn muốn đặt lịch",
+    "search_services": "Tìm kiếm dịch vụ",
+    "no_results": "Không tìm thấy kết quả",
+    "selected_services": "Dịch vụ đã chọn",
+    "total_price": "Tổng tiền",
+    "total_duration": "Tổng thời gian",
+    "minutes": "phút",
+    "complete_previous_step": "Vui lòng hoàn thành bước trước",
+    "confirm": "Xác nhận lịch hẹn",
+    "selected_services_count": "Đã chọn {{count}} dịch vụ",
+    "select_datetime_stylist": "Chọn ngày giờ và stylist",
+    "select_stylist": "Chọn stylist",
+    "selected": "Đã chọn",
+    "exp": "Kinh nghiệm",
+    "years": "năm",
+    "customer": "khách hàng",
+    "today": "Hôm nay",
+    "confirm_booking": "Xác nhận đặt lịch",
+    "booking_successful": "Đặt lịch thành công",
+    "booking_failed": "Đặt lịch thất bại"
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "language": "Ngôn ngữ",
+    "notifications": "Thông báo",
+    "profile": "Hồ sơ",
+    "privacy": "Quyền riêng tư",
+    "appearance": "Giao diện",
+    "theme": "Chủ đề",
+    "dark_mode": "Chế độ tối",
+    "about": "Giới thiệu",
+    "terms": "Điều khoản và Điều kiện",
+    "contact": "Liên hệ",
+    "version": "Phiên bản"
+  },
+  "errors": {
+    "something_wrong": "Đã có lỗi xảy ra. Vui lòng thử lại sau.",
+    "network_error": "Lỗi kết nối. Vui lòng kiểm tra kết nối của bạn.",
+    "server_error": "Lỗi máy chủ. Vui lòng thử lại sau."
+  },
+  "vouchers": {
+    "add_voucher": "Thêm voucher",
+    "applied_voucher": "Đã áp dụng voucher",
+    "enter_voucher_code": "Nhập mã voucher",
+    "apply": "Áp dụng",
+    "remove": "Xóa bỏ",
+    "applied": "Đã áp dụng",
+    "enter_code": "Vui lòng nhập mã voucher",
+    "invalid_code": "Mã voucher không hợp lệ",
+    "min_amount_required": "Yêu cầu đơn hàng tối thiểu {{minAmount}}",
+    "available_vouchers": "Voucher khả dụng",
+    "discount": "Giảm giá",
+    "final_price": "Thành tiền",
+    "no_vouchers": "Không có voucher nào khả dụng"
   }
 }

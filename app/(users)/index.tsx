@@ -5,21 +5,14 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
-  StyleSheet,
 } from "react-native";
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  interpolate,
-  Extrapolate,
-} from "react-native-reanimated";
+
 import Carousel from "react-native-reanimated-carousel";
 import React, { useEffect, useState, useRef } from "react";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
-import Pagination from "@/components/ui/Pagination";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import Icon from "@/assets/icons";

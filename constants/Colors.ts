@@ -13,6 +13,7 @@ export const Colors = {
   error: "#F44336",
   warning: "#FF9800",
   info: "#2196F3",
+  selected: "#183B4E",
   light: {
     text: "#3B6790",
     background: "#fff",

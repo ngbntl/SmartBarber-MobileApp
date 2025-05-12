@@ -198,7 +198,7 @@ const Login = () => {
 
           if (userInfo) {
             dispatch(setUserInfo(userInfo));
-            const userRole = userInfo.roles;
+            const userRole = userInfo.roleType;
             if (userRole === "system_admin") {
               // router.replace("/(admin)");
             } else if (userRole === "system_staff") {

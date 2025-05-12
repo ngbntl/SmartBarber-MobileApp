@@ -20,7 +20,12 @@
     "success": "Success",
     "warning": "Warning",
     "info": "Info",
-    "getStarted": "Get Started"
+    "getStarted": "Get Started",
+    "retry": "Retry",
+    "done": "Done",
+    "language": "Language",
+    "yes": "Yes",
+    "no": "No"
   },
   "time": {
     "just_now": "Just now",
@@ -47,7 +52,7 @@
     "account_register_success": "Account registered successfully",
     "account_login_failed": "Login failed. Please check your login information and try again.",
     "login": {
-      "title": "Welcome Back 👋",
+      "title": "Welcome",
       "description": "Please enter your details to login",
       "email": "Email",
       "password": "Password",
@@ -61,10 +66,18 @@
       "password_empty": "Please enter your password",
       "password_invalid": "Please enter a valid password",
       "password_short": "Password must be at least 6 characters long",
-      "password_match": "Passwords do not match"
+      "password_match": "Passwords do not match",
+      "subtitle": "Log in to your account",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "loginButton": "Log in",
+      "dontHaveAccount": "Don't have an account? ",
+      "invalidEmail": "Invalid email format",
+      "invalidPassword": "Password must be at least 8 characters",
+      "emptyField": "This field is required"
     },
     "register": {
-      "title": "Create an Account",
+      "title": "Create Account",
       "description": "Please enter your details to create an account",
       "firstName": "First Name",
       "lastName": "Last Name",
@@ -80,11 +93,29 @@
       "password_empty": "Please enter your password",
       "confirmPassword_empty": "Please enter your confirm password",
       "password_short": "Password must be at least 6 characters long",
-      "password_match": "Passwords do not match"
+      "password_match": "Passwords do not match",
+      "subtitle": "Fill in your details to get started",
+      "firstNamePlaceholder": "First Name",
+      "lastNamePlaceholder": "Last Name",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Password",
+      "confirmPasswordPlaceholder": "Confirm Password",
+      "first_name_empty": "First name is required",
+      "last_name_empty": "Last name is required",
+      "email_invalid": "Invalid email format",
+      "password_invalid": "Password must contain at least one letter, one number, and one special character"
+    },
+    "forgotPassword": {
+      "title": "Reset Password",
+      "subtitle": "Enter your email address, we'll send you a link to reset your password",
+      "emailPlaceholder": "Email",
+      "sendButton": "Send Reset Link",
+      "backToLogin": "Back to Login",
+      "success": "Reset link sent to your email"
     }
   },
   "otp": {
-    "title": "Verify Your Email",
+    "title": "Verification Code",
     "description": "Enter the OTP sent to your email",
     "receive": "Didn't receive the OTP? ",
     "resendOtp": "Resend",
@@ -94,7 +125,11 @@
     "otp_ishort": "OTP must be at least 6 characters long",
     "otp_incorrect": "Incorrect OTP",
     "otp_expired": "OTP has expired",
-    "verify_success": "OTP verified successfully"
+    "verify_success": "OTP verified successfully",
+    "verifySuccess": "Email verified successfully",
+    "resendOtp_after": "Resend in ",
+    "otp_ishort": "Please enter all 6 digits",
+    "receive": "Didn't receive the code? "
   },
   "user": {
     "email_existed": "Email already exists"
@@ -124,5 +159,63 @@
       "title": "Experience top barbers",
       "description": "Reputable, honest reviews – delivering quality experiences"
     }
+  },
+  "appointments": {
+    "title": "Book an Appointment",
+    "select_branch": "Select a Branch",
+    "branch_description": "Choose a branch location that's convenient for you.",
+    "select_services": "Select Services",
+    "service_description": "Choose the service you want to book.",
+    "search_services": "Search services",
+    "no_results": "No results found",
+    "selected_services": "Selected Services",
+    "total_price": "Total Price",
+    "total_duration": "Total Duration",
+    "minutes": "min",
+    "complete_previous_step": "Please complete the previous step",
+    "confirm": "Confirm Appointment",
+    "selected_services_count": "Selected {{count}} services",
+    "select_datetime_stylist": "Select Date & Time with Stylist",
+    "select_stylist": "Select Stylist",
+    "selected": "Selected",
+    "exp": "Experience",
+    "years": "years",
+    "customer": "Customer",
+    "today": "Today",
+    "confirm_booking": "Confirm Booking"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "notifications": "Notifications",
+    "profile": "Profile",
+    "privacy": "Privacy",
+    "appearance": "Appearance",
+    "theme": "Theme",
+    "dark_mode": "Dark Mode",
+    "about": "About Us",
+    "terms": "Terms and Conditions",
+    "contact": "Contact Us",
+    "version": "Version"
+  },
+  "errors": {
+    "something_wrong": "Something went wrong. Please try again later.",
+    "network_error": "Network error. Please check your connection.",
+    "server_error": "Server error. Please try again later."
+  },
+  "vouchers": {
+    "add_voucher": "Add Voucher",
+    "applied_voucher": "Voucher Applied",
+    "enter_voucher_code": "Enter voucher code",
+    "apply": "Apply",
+    "remove": "Remove",
+    "applied": "Applied",
+    "enter_code": "Please enter a voucher code",
+    "invalid_code": "Invalid voucher code",
+    "min_amount_required": "Minimum order amount of {{minAmount}} required",
+    "available_vouchers": "Available Vouchers",
+    "discount": "Discount",
+    "final_price": "Final Price",
+    "no_vouchers": "No vouchers available"
   }
 }
