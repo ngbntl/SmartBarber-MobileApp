@@ -258,44 +258,81 @@ const HomeScreen = () => {
         {upcomingAppointments && upcomingAppointments.length > 0 ? (
           <View className="mb-8 px-6">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-[#333]">
-                {t("home.upcoming")}
+              <Text className="text-lg font-bold text-[#333]">
+                {t("home.upcoming_appointments")}
               </Text>
-              <TouchableOpacity>
-                <Text className="text-sm font-medium text-primary">
-                  {t("home.view_all")}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push("/(users)/appointments")}
+              >
+                <Text className="text-primary font-medium">
+                  {t("common.see_all")}
                 </Text>
               </TouchableOpacity>
             </View>
-
-            {upcomingAppointments.map((appointment) => (
-              <TouchableOpacity
-                key={appointment.id}
-                className="flex-row items-center bg-white rounded-2xl p-5 mb-3 shadow-md"
-                activeOpacity={0.7}
-              >
-                <View className="w-14 h-14 bg-primary/10 rounded-xl justify-center items-center mr-4">
-                  <Icon name="scissors" size={24} color={Colors.primary} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-lg font-bold text-[#333] mb-1">
-                    {formatCountdown(appointment.appointmentDate)}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="pt-1"
+            >
+              {upcomingAppointments.slice(0, 3).map((appointment) => (
+                <TouchableOpacity
+                  key={appointment.id}
+                  className="bg-white rounded-2xl shadow-md p-4 mr-4 w-72"
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(users)/appointments",
+                      params: { selected: appointment.id },
+                    })
+                  }
+                >
+                  <View className="flex-row justify-between items-start mb-3">
+                    <View className="flex-row items-center">
+                      <View className="w-10 h-10 bg-primary/10 rounded-full justify-center items-center mr-3">
+                        <Icon
+                          name="calendar"
+                          size={20}
+                          color={Colors.primary}
+                        />
+                      </View>
+                      <View>
+                        <Text className="font-bold text-base text-[#333]">
+                          {formatAppointmentDate(appointment.appointmentDate)}
+                        </Text>
+                        <Text className="text-gray-500 text-sm">
+                          {formatTime(appointment.appointmentDate)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="bg-primary/10 rounded-full px-3 py-1">
+                      <Text className="text-xs text-primary font-medium">
+                        {appointment.status}
+                      </Text>
+                    </View>
+                  </View>
+                  <Text className="text-sm text-gray-600 mb-3">
+                    {appointment.services
+                      .map((service) => service.name)
+                      .join(", ")}
                   </Text>
-                  <Text className="text-base text-[#666] mb-1">
-                    {appointment.stylistName}
-                  </Text>
-                  <View className="flex-row items-center mt-1">
-                    <Icon name="calendar" size={14} color="#888" />
-                    <Text className="ml-2 text-sm text-[#888]">
-                      {formatDateTime(appointment.appointmentDate)}
+                  <View className="h-[1px] bg-gray-200 my-2" />
+                  <View className="flex-row justify-between items-center mt-3">
+                    <Text className="text-orange-500 font-medium">
+                      {formatCountdown(appointment.appointmentDate)}
+                    </Text>
+                    <Text className="font-bold text-[#333]">
+                      {formatPrice(
+                        appointment.services.reduce(
+                          (total, service) => total + service.price,
+                          0
+                        )
+                      )}
                     </Text>
                   </View>
-                </View>
-                <View className="ml-2">
-                  <Ionicons name="chevron-forward" size={20} color="#CCC" />
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         ) : null}
 

@@ -19,13 +19,23 @@ import Button from "../../components/button/Button";
 
 import { Service } from "../../types/services";
 import { Branch } from "@/types/branch";
-import { formatPrice } from "@/utils/functions";
+import {
+  formatPrice,
+  formatDate,
+  formatTime,
+  formatAppointmentDate,
+  formatShortDate,
+  formatTimeSlot,
+  isToday,
+} from "@/utils/functions";
 import StylistApi from "@/api/stylist";
 import Loading from "@/components/ui/Loading";
 import { Colors } from "@/constants/Colors";
 import TimeSlotsApi from "@/api/time-slots";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store";
+import AppointmentsApi from "@/api/appointments";
+import { useNotification } from "@/hooks/useNotification";
 
 interface Voucher {
   id: string;
@@ -72,6 +82,7 @@ const AppointmentsScreen = () => {
     selectedDate,
     selectedVoucher,
   } = bookingState;
+  const { appNotification, toast, setToast } = useNotification();
 
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [modalState, setModalState] = useState({
@@ -192,10 +203,7 @@ const AppointmentsScreen = () => {
   };
 
   const formatDateString = (date: Date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, "0");
-    const day = String(date.getDate()).padStart(2, "0");
-    return `${year}-${month}-${day}`;
+    return formatShortDate(date, "-");
   };
 
   const handleBranchSelect = (branch: Branch) => {
@@ -254,7 +262,7 @@ const AppointmentsScreen = () => {
     try {
       const response = await timeSlotsApi.getTimeSlotByStylistId(
         stylistId,
-        selectedDate.toDateString()
+        formatShortDate(selectedDate, "-")
       );
 
       setAvailableTimeSlots(response.items);
@@ -290,11 +298,16 @@ const AppointmentsScreen = () => {
           notes: "",
         };
 
-        console.log("Booking appointment:", appointmentData);
+        const appointmentApi = new AppointmentsApi();
 
-        resetBookingForm();
+        const res = await appointmentApi.createAppointment(appointmentData);
+        if (res) {
+          appNotification(res);
+          resetBookingForm();
+        } else {
+          alert(t("appointments.booking_failed"));
+        }
 
-        alert(t("appointments.booking_successful"));
         router.push("/(users)");
       } else {
         alert(t("appointments.complete_all_steps"));
@@ -347,31 +360,13 @@ const AppointmentsScreen = () => {
     }
   };
 
-  const formatDate = (date: Date) => {
-    const day = date.getDate();
-    const month = date.getMonth() + 1;
-    const dayOfWeek = date.getDay();
-    const dayNames = ["CN", "T2", "T3", "T4", "T5", "T6", "T7"];
-
-    return `${dayNames[dayOfWeek]}, ${day < 10 ? "0" + day : day}/${
-      month < 10 ? "0" + month : month
-    }`;
-  };
-
-  const isToday = (date: Date) => {
-    const today = new Date();
-    return (
-      date.getDate() === today.getDate() &&
-      date.getMonth() === today.getMonth() &&
-      date.getFullYear() === today.getFullYear()
-    );
-  };
-
   const getSelectedDateString = () => {
     if (isToday(selectedDate)) {
-      return `${t("appointments.today")}, ${formatDate(selectedDate)}`;
+      return `${t("appointments.today")}, ${formatAppointmentDate(
+        selectedDate
+      )}`;
     }
-    return formatDate(selectedDate);
+    return formatAppointmentDate(selectedDate);
   };
 
   const handleStylistSelect = useCallback((stylist: any) => {
@@ -807,11 +802,9 @@ const AppointmentsScreen = () => {
                               availableTimeSlots.map(
                                 (slot: any, index: any) => {
                                   // Convert API time format (09:00:00) to display format (9h00)
-                                  const [hours, minutes] =
-                                    slot.startTime.split(":");
-                                  const displayTime = `${parseInt(
-                                    hours
-                                  )}h${minutes}`;
+                                  const displayTime = formatTimeSlot(
+                                    slot.startTime
+                                  );
 
                                   return (
                                     <TouchableOpacity

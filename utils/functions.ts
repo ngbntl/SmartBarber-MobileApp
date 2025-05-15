@@ -244,3 +244,43 @@ export const formatPrice = (price: number): string => {
 
   return `${formattedPrice} vnd`;
 };
+
+/**
+ * Formats a time string from API format (09:00:00) to display format (9h00)
+ * @param timeString - Time string in HH:MM:SS format
+ * @returns Formatted time string in the format "HhMM"
+ */
+export const formatTimeSlot = (timeString: string): string => {
+  if (!timeString) return "";
+  const [hours, minutes] = timeString.split(":");
+  return `${parseInt(hours)}h${minutes}`;
+};
+
+/**
+ * Format date with weekday name based on locale
+ * @param date Date object or date string
+ * @param options Additional formatting options
+ * @returns Formatted date with weekday name (e.g., "Thứ Hai, 15 Tháng 5 2025")
+ */
+export const formatDateWithWeekday = (
+  date: Date | string,
+  options?: { includeYear?: boolean }
+): string => {
+  if (!date) return "";
+
+  const dateObj = typeof date === "string" ? new Date(date) : date;
+  const language = i18n.language || "en";
+
+  // Get the locale format to use
+  const locale = localeMap[language] || "en-US";
+
+  // Format options including weekday
+  const formatOptions: Intl.DateTimeFormatOptions = {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: options?.includeYear !== false ? "numeric" : undefined,
+  };
+
+  return new Intl.DateTimeFormat(locale, formatOptions).format(dateObj);
+};
