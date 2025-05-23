@@ -219,8 +219,8 @@ export default function RegisterScreen() {
       } else {
         appNotification(response);
       }
-    } catch (error) {
-      appNotification(error, _error);
+    } catch (error: any) {
+      appNotification(error);
     } finally {
       setIsLoading(false);
     }

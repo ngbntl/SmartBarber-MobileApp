@@ -5,10 +5,12 @@ import {
   TouchableOpacity,
   Image,
   Dimensions,
+  RefreshControl,
 } from "react-native";
 
 import Carousel from "react-native-reanimated-carousel";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { useFocusEffect } from "expo-router";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { Colors } from "@/constants/Colors";
 import { Ionicons } from "@expo/vector-icons";
@@ -22,10 +24,24 @@ import {
   formatCountdown,
   formatDateTime,
   formatPrice,
+  formatTime,
+  formatAppointmentDate,
 } from "@/utils/functions";
 import ServicesApi from "@/api/services";
 import BranchesApi from "@/api/branches";
 import { router } from "expo-router";
+import i18n from "@/lib/i18n";
+
+// Helper function to get current locale
+const getCurrentLocale = (): string => {
+  const localeMap: Record<string, string> = {
+    en: "en-US",
+    vi: "vi-VN",
+    ja: "ja-JP",
+  };
+  const language = i18n.language || "en";
+  return localeMap[language] || "en-US";
+};
 
 const { width } = Dimensions.get("window");
 const SLIDE_WIDTH = width - 48;
@@ -39,6 +55,7 @@ const HomeScreen = () => {
   const [services, setServices] = useState<any[]>([]);
   const [branches, setBranches] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
   const carouselRef = useRef(null);
 
   const user = useSelector((state: RootState) => state.auth.userInfo);
@@ -46,43 +63,64 @@ const HomeScreen = () => {
   const servicesApi = new ServicesApi();
   const branchesApi = new BranchesApi();
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        if (user) {
-          const appointments = await appointmentsApi.getAppointments(user.id);
-          setUpcomingAppointments(appointments.items || []);
-        }
-      } catch (error) {
-        console.error("Error fetching appointments:", error);
-        setUpcomingAppointments([]);
-      }
-    };
+  // Hàm tải dữ liệu cho tất cả các thành phần
+  const fetchData = async () => {
+    await Promise.all([fetchAppointments(), fetchServices(), fetchBranches()]);
+  };
 
-    const fetchServices = async () => {
-      try {
-        const services = await servicesApi.getServices();
-        setServices(services.items || []);
-      } catch (error) {
-        console.error("Error fetching services:", error);
-        setServices([]);
+  // Hàm tải các cuộc hẹn
+  const fetchAppointments = async () => {
+    try {
+      if (user) {
+        const appointments = await appointmentsApi.getAppointments(user.id);
+        setUpcomingAppointments(appointments.items || []);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setUpcomingAppointments([]);
+    }
+  };
 
-    const fetchBranches = async () => {
-      try {
-        const branches = await branchesApi.getBranches();
-        setBranches(branches.items || []);
-      } catch (error) {
-        console.error("Error fetching branches:", error);
-        setBranches([]);
-      }
-    };
+  // Hàm tải các dịch vụ
+  const fetchServices = async () => {
+    try {
+      const services = await servicesApi.getServices();
+      setServices(services.items || []);
+    } catch (error) {
+      console.error("Error fetching services:", error);
+      setServices([]);
+    }
+  };
 
-    fetchAppointments();
-    fetchServices();
-    fetchBranches();
+  // Hàm tải các chi nhánh
+  const fetchBranches = async () => {
+    try {
+      const branches = await branchesApi.getBranches();
+      setBranches(branches.items || []);
+    } catch (error) {
+      console.error("Error fetching branches:", error);
+      setBranches([]);
+    }
+  };
+
+  // Xử lý khi người dùng kéo xuống để refresh
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
   }, [user]);
+
+  // Tải dữ liệu khi component được tạo lần đầu
+  useEffect(() => {
+    fetchData();
+  }, [user]);
+
+  // Tải lại dữ liệu mỗi khi màn hình được focus
+  useFocusEffect(
+    useCallback(() => {
+      fetchAppointments();
+    }, [user])
+  );
 
   const introSlides = [
     {
@@ -192,20 +230,25 @@ const HomeScreen = () => {
 
   return (
     <ScreenWrapper>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         <View className="flex-row justify-between items-center px-6 pt-4 pb-2 mb-5">
           <View>
             <Text className="text-base text-gray-500 font-medium">
               {t("home.welcome")},
             </Text>
             <Text className="text-2xl font-bold text-[#333]">
-              {user?.firstName}
+              {user?.fullName}
             </Text>
           </View>
           <TouchableOpacity
             className="w-11 h-11 bg-white rounded-full shadow-md justify-center items-center"
             activeOpacity={0.7}
-            onPress={() => router.push("/notifications")}
+            onPress={() => router.push("/")}
           >
             <Icon name="noti" size={24} color={Colors.primary} />
           </TouchableOpacity>
@@ -258,44 +301,146 @@ const HomeScreen = () => {
         {upcomingAppointments && upcomingAppointments.length > 0 ? (
           <View className="mb-8 px-6">
             <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-xl font-bold text-[#333]">
-                {t("home.upcoming")}
+              <Text className="text-lg font-bold text-[#333]">
+                {t("home.upcoming_appointments")}
               </Text>
-              <TouchableOpacity>
-                <Text className="text-sm font-medium text-primary">
-                  {t("home.view_all")}
+              <TouchableOpacity
+                activeOpacity={0.7}
+                onPress={() => router.push("/(users)/appointments")}
+              >
+                <Text className="text-primary font-medium">
+                  {t("common.see_all")}
                 </Text>
               </TouchableOpacity>
             </View>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              className="pt-1"
+            >
+              {upcomingAppointments.slice(0, 3).map((appointment) => (
+                <TouchableOpacity
+                  key={appointment.id}
+                  className="bg-white rounded-2xl p-4 mr-4"
+                  activeOpacity={0.7}
+                  onPress={() =>
+                    router.push({
+                      pathname: "/(users)/appointments",
+                      params: { selected: appointment.id },
+                    })
+                  }
+                >
+                  <View className="flex-row justify-between items-start mb-2">
+                    <View className="flex-row items-center">
+                      <View className="w-10 h-10 bg-primary/10 rounded-full justify-center items-center mr-3">
+                        <Icon
+                          name="calendar"
+                          size={20}
+                          color={Colors.primary}
+                        />
+                      </View>
+                      <View>
+                        <Text className="font-bold text-base text-[#333]">
+                          {new Date(
+                            appointment.appointmentDate
+                          ).toLocaleDateString(getCurrentLocale(), {
+                            day: "2-digit",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </Text>
+                        <Text className="text-gray-500 text-sm">
+                          {appointment.startTime?.substring(0, 5) ||
+                            formatTime(appointment.appointmentDate)}
+                        </Text>
+                      </View>
+                    </View>
+                    <View className="bg-primary/10 rounded-full px-3 py-1">
+                      <Text className="text-xs text-primary font-medium capitalize">
+                        {appointment.status}
+                      </Text>
+                    </View>
+                  </View>
 
-            {upcomingAppointments.map((appointment) => (
-              <TouchableOpacity
-                key={appointment.id}
-                className="flex-row items-center bg-white rounded-2xl p-5 mb-3 shadow-md"
-                activeOpacity={0.7}
-              >
-                <View className="w-14 h-14 bg-primary/10 rounded-xl justify-center items-center mr-4">
-                  <Icon name="scissors" size={24} color={Colors.primary} />
-                </View>
-                <View className="flex-1">
-                  <Text className="text-lg font-bold text-[#333] mb-1">
-                    {formatCountdown(appointment.appointmentDate)}
-                  </Text>
-                  <Text className="text-base text-[#666] mb-1">
-                    {appointment.stylistName}
-                  </Text>
-                  <View className="flex-row items-center mt-1">
-                    <Icon name="calendar" size={14} color="#888" />
-                    <Text className="ml-2 text-sm text-[#888]">
-                      {formatDateTime(appointment.appointmentDate)}
+                  {/* Branch and stylist information */}
+                  <View className="mb-3">
+                    <View className="flex-row items-center mb-1">
+                      <Ionicons
+                        name="location-outline"
+                        size={14}
+                        color={Colors.primary}
+                      />
+                      <Text
+                        className="text-gray-700 text-sm ml-1.5"
+                        numberOfLines={1}
+                      >
+                        {appointment.branchName || "Branch not specified"}
+                      </Text>
+                    </View>
+                    <View className="flex-row items-center">
+                      <Ionicons
+                        name="person-outline"
+                        size={14}
+                        color={Colors.primary}
+                      />
+                      <Text className="text-gray-700 text-sm ml-1.5">
+                        {appointment.stylistName || "Stylist not assigned"}
+                      </Text>
+                    </View>
+                  </View>
+
+                  {/* Services */}
+                  {appointment.services && appointment.services.length > 0 ? (
+                    <View className="mb-2">
+                      <Text className="text-xs text-gray-500 mb-1">
+                        {t("appointments.services")}:
+                      </Text>
+                      {appointment.services.map((serviceItem, index) => (
+                        <View
+                          key={serviceItem.id}
+                          className="flex-row justify-between mb-1"
+                        >
+                          <Text
+                            className="text-sm text-gray-700"
+                            numberOfLines={1}
+                            style={{ width: "70%" }}
+                          >
+                            {serviceItem.service?.name || "Unknown service"}
+                          </Text>
+                          <Text className="text-sm text-gray-700 font-medium">
+                            {formatPrice(parseFloat(serviceItem.price || "0"))}
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  ) : (
+                    <View className="mb-2">
+                      <Text className="text-sm text-gray-500">
+                        {t("appointments.no_services")}
+                      </Text>
+                    </View>
+                  )}
+
+                  <View className="h-[1px] bg-gray-200 my-2" />
+
+                  <View className="flex-row justify-between items-center mt-1">
+                    <View className="flex-row items-center">
+                      <Ionicons name="time-outline" size={14} color="#f97316" />
+                      <Text className="text-orange-500 font-medium ml-1 text-sm">
+                        {appointment.durationMinutes
+                          ? `${Math.floor(appointment.durationMinutes / 60)}h ${
+                              appointment.durationMinutes % 60
+                            }m`
+                          : formatCountdown(appointment.appointmentDate)}
+                      </Text>
+                    </View>
+                    <Text className="font-bold text-primary">
+                      {formatPrice(parseFloat(appointment.finalAmount || "0"))}
                     </Text>
                   </View>
-                </View>
-                <View className="ml-2">
-                  <Ionicons name="chevron-forward" size={20} color="#CCC" />
-                </View>
-              </TouchableOpacity>
-            ))}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
         ) : null}
 
@@ -453,4 +598,5 @@ const HomeScreen = () => {
   );
 };
 
-export default HomeScreen;
+const Home = HomeScreen;
+export default Home;

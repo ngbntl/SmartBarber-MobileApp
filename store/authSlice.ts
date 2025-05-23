@@ -9,6 +9,7 @@ interface UserInfo {
   id: string;
   firstName: string;
   lastName: string;
+  fullName: string;
   email: string;
   role: string;
   status: string;

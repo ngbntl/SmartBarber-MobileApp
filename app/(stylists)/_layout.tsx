@@ -4,11 +4,8 @@ import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
-import { useColorScheme } from "@/hooks/useColorScheme";
 
-export default function UsersTabLayout() {
-  const colorScheme = useColorScheme();
-
+export default function StylistLayout() {
   return (
     <Tabs
       screenOptions={{
@@ -35,7 +32,7 @@ export default function UsersTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: "Trang chủ",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -45,10 +42,11 @@ export default function UsersTabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
-        name="appointments"
+        name="schedule"
         options={{
-          title: "Bookings",
+          title: "Lịch làm việc",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
@@ -58,23 +56,25 @@ export default function UsersTabLayout() {
           ),
         }}
       />
+
       <Tabs.Screen
-        name="hairTryOn"
+        name="clients"
         options={{
-          title: "Hair Try On",
+          title: "Khách hàng",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? "camera-reverse" : "camera-reverse-outline"}
+              name={focused ? "people" : "people-outline"}
               size={24}
               color={color}
             />
           ),
         }}
       />
+
       <Tabs.Screen
-        name="settings"
+        name="profile"
         options={{
-          title: "Account",
+          title: "Hồ sơ",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}

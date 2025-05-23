@@ -201,8 +201,8 @@ const Login = () => {
             const userRole = userInfo.roleType;
             if (userRole === "system_admin") {
               // router.replace("/(admin)");
-            } else if (userRole === "system_staff") {
-              router.replace("/(staffs)");
+            } else if (userRole === "system_stylist") {
+              router.replace("/(stylists)");
             } else if (userRole === "system_user") {
               router.replace("/(users)");
             }
