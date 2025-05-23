@@ -36,6 +36,17 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/store";
 import AppointmentsApi from "@/api/appointments";
 import { useNotification } from "@/hooks/useNotification";
+import i18n from "@/lib/i18n";
+
+const getCurrentLocale = (): string => {
+  const localeMap: Record<string, string> = {
+    en: "en-US",
+    vi: "vi-VN",
+    ja: "ja-JP",
+  };
+  const language = i18n.language || "en";
+  return localeMap[language] || "en-US";
+};
 
 interface Voucher {
   id: string;
@@ -203,7 +214,8 @@ const AppointmentsScreen = () => {
   };
 
   const formatDateString = (date: Date) => {
-    return formatShortDate(date, "-");
+    // Use the fixed formatShortDate with apiFormat=true to ensure YYYY-MM-DD format
+    return formatShortDate(date, "-", true);
   };
 
   const handleBranchSelect = (branch: Branch) => {
@@ -260,9 +272,16 @@ const AppointmentsScreen = () => {
   const fetchAvailableTimeSlots = async (stylistId: string, date: Date) => {
     setLoadingState((prevState) => ({ ...prevState, loadingTimeSlots: true }));
     try {
+      // Format the date as YYYY-MM-DD for API request
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      const formattedDate = `${year}-${month}-${day}`;
+
+      // Use raw formatted date string instead of using the formatShortDate function
       const response = await timeSlotsApi.getTimeSlotByStylistId(
         stylistId,
-        formatShortDate(selectedDate, "-")
+        formattedDate
       );
 
       setAvailableTimeSlots(response.items);
@@ -285,13 +304,22 @@ const AppointmentsScreen = () => {
         selectedDateTime &&
         selectedStylist
       ) {
+        // Format the time from "9h00" to "09:00" format for the API
+        let formattedStartTime = "";
+        if (selectedTimeSlot) {
+          const [hours, minutes] = selectedTimeSlot.split("h");
+          const paddedHours = hours.padStart(2, "0");
+          const paddedMinutes = (minutes || "00").padStart(2, "0");
+          formattedStartTime = `${paddedHours}:${paddedMinutes}`;
+        }
+
         const appointmentData = {
           userId: user?.id,
           branchId: selectedBranch.id,
           serviceIds: selectedServices.map((service) => service.id),
           stylistId: selectedStylist.id,
           appointmentDate: selectedDateTime.toISOString(),
-          startTime: selectedTimeSlot,
+          startTime: formattedStartTime, // Using the properly formatted time
           totalAmount: getTotalPrice(),
           discountAmount: calculateDiscountAmount(),
           promotionId: selectedVoucher?.id || null,
@@ -758,6 +786,12 @@ const AppointmentsScreen = () => {
                               );
                               const isWorkingDay = dayInfo?.isWorking ?? true; // Default to true if no data
 
+                              // Get day name
+                              const dayName = date.toLocaleDateString(
+                                getCurrentLocale(),
+                                { weekday: "short" }
+                              );
+
                               return (
                                 <TouchableOpacity
                                   key={index}
@@ -765,7 +799,7 @@ const AppointmentsScreen = () => {
                                     isWorkingDay ? handleDateSelect(date) : null
                                   }
                                   disabled={!isWorkingDay}
-                                  className={`mr-3 px-4 py-2 rounded-full ${
+                                  className={`mr-3 px-4 py-2 rounded-xl ${
                                     selectedDate.getDate() === date.getDate() &&
                                     selectedDate.getMonth() === date.getMonth()
                                       ? "bg-[#14296d]"
@@ -774,22 +808,38 @@ const AppointmentsScreen = () => {
                                       : "bg-gray-200"
                                   }`}
                                 >
-                                  <Text
-                                    className={`font-medium ${
-                                      selectedDate.getDate() ===
-                                        date.getDate() &&
-                                      selectedDate.getMonth() ===
-                                        date.getMonth()
-                                        ? "text-white"
-                                        : isWorkingDay
-                                        ? "text-gray-700"
-                                        : "text-gray-400 line-through"
-                                    }`}
-                                  >
-                                    {isToday(date)
-                                      ? t("appointments.today")
-                                      : formatDate(date)}
-                                  </Text>
+                                  <View className="items-center">
+                                    <Text
+                                      className={`font-medium ${
+                                        selectedDate.getDate() ===
+                                          date.getDate() &&
+                                        selectedDate.getMonth() ===
+                                          date.getMonth()
+                                          ? "text-white"
+                                          : isWorkingDay
+                                          ? "text-gray-700"
+                                          : "text-gray-400 line-through"
+                                      }`}
+                                    >
+                                      {isToday(date)
+                                        ? t("appointments.today")
+                                        : formatDate(date)}
+                                    </Text>
+                                    <Text
+                                      className={`text-xs mt-1 ${
+                                        selectedDate.getDate() ===
+                                          date.getDate() &&
+                                        selectedDate.getMonth() ===
+                                          date.getMonth()
+                                          ? "text-white opacity-80"
+                                          : isWorkingDay
+                                          ? "text-gray-500"
+                                          : "text-gray-400 line-through"
+                                      }`}
+                                    >
+                                      {dayName}
+                                    </Text>
+                                  </View>
                                 </TouchableOpacity>
                               );
                             })

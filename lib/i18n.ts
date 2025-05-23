@@ -6,25 +6,23 @@ import en from "../translations/en.json";
 import vi from "../translations/vi.json";
 import ja from "../translations/ja.json";
 
-const deviceLanguage = Localization.locale.split("-")[0];
+// Safely get device language with fallback
+const deviceLanguage = Localization.locale
+  ? Localization.locale.split("-")[0]
+  : "vi";
 
 const supportedLanguages = ["vi", "en", "ja"];
 const defaultLanguage = supportedLanguages.includes(deviceLanguage)
   ? deviceLanguage
   : "vi";
 
+const resources = {
+  en: { translation: en },
+  vi: { translation: vi },
+  ja: { translation: ja },
+};
 i18n.use(initReactI18next).init({
-  resources: {
-    en: {
-      translation: en,
-    },
-    vi: {
-      translation: vi,
-    },
-    ja: {
-      translation: ja,
-    },
-  },
+  resources,
   lng: defaultLanguage,
   fallbackLng: "vi",
   debug: process.env.NODE_ENV === "development",
@@ -38,5 +36,8 @@ i18n.use(initReactI18next).init({
   saveMissing: false,
   missingKeyHandler: () => {},
 });
+
+// Mark as initialized to help with debugging
+i18n.isInitialized = true;
 
 export default i18n;

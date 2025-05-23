@@ -93,15 +93,26 @@ export const formatDate = (date: Date | string): string => {
  * Format a date to a short date string based on locale patterns
  * @param date Date object or date string
  * @param separator Separator character for date parts (default: "/")
+ * @param apiFormat If true, always returns YYYY-MM-DD format regardless of locale
  * @returns Formatted date string
  */
 export const formatShortDate = (
   date: Date | string,
-  separator: string = "/"
+  separator: string = "/",
+  apiFormat: boolean = false
 ): string => {
   if (!date) return "";
 
   const dateObj = typeof date === "string" ? new Date(date) : date;
+  const day = dateObj.getDate().toString().padStart(2, "0");
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+  const year = dateObj.getFullYear();
+
+  // If requesting API format, always return YYYY-MM-DD regardless of locale
+  if (apiFormat || separator === "-") {
+    return `${year}-${month}-${day}`;
+  }
+
   const locale = getCurrentLocale();
 
   // For Japanese and Vietnamese, use the locale's default format
@@ -110,10 +121,6 @@ export const formatShortDate = (
   }
 
   // For English and other locales, use a custom format
-  const day = dateObj.getDate().toString().padStart(2, "0");
-  const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-  const year = dateObj.getFullYear();
-
   return `${day}${separator}${month}${separator}${year}`;
 };
 

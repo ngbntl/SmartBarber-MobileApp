@@ -59,12 +59,12 @@ export default function UsersTabLayout() {
         }}
       />
       <Tabs.Screen
-        name="notifications"
+        name="hairTryOn"
         options={{
-          title: "Notifications",
+          title: "Hair Try On",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? "notifications" : "notifications-outline"}
+              name={focused ? "camera-reverse" : "camera-reverse-outline"}
               size={24}
               color={color}
             />
