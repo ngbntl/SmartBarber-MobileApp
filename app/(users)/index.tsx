@@ -302,26 +302,23 @@ const HomeScreen = () => {
           <View className="mb-8 px-6">
             <View className="flex-row justify-between items-center mb-4">
               <Text className="text-lg font-bold text-[#333]">
-                {t("home.upcoming_appointments")}
+                {t("home.upcoming")}
               </Text>
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 activeOpacity={0.7}
                 onPress={() => router.push("/(users)/appointments")}
               >
                 <Text className="text-primary font-medium">
                   {t("common.see_all")}
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
             </View>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              className="pt-1"
-            >
+            {/* Replacing horizontal ScrollView with vertical list */}
+            <View>
               {upcomingAppointments.slice(0, 3).map((appointment) => (
                 <TouchableOpacity
                   key={appointment.id}
-                  className="bg-white rounded-2xl p-4 mr-4"
+                  className="bg-white rounded-2xl p-4 mb-4"
                   activeOpacity={0.7}
                   onPress={() =>
                     router.push({
@@ -393,7 +390,7 @@ const HomeScreen = () => {
                   {appointment.services && appointment.services.length > 0 ? (
                     <View className="mb-2">
                       <Text className="text-xs text-gray-500 mb-1">
-                        {t("appointments.services")}:
+                        {t("appointments.selected_services")}:
                       </Text>
                       {appointment.services.map((serviceItem, index) => (
                         <View
@@ -440,7 +437,7 @@ const HomeScreen = () => {
                   </View>
                 </TouchableOpacity>
               ))}
-            </ScrollView>
+            </View>
           </View>
         ) : null}
 
