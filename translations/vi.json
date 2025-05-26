@@ -25,7 +25,11 @@
     "done": "Hoàn thành",
     "language": "Ngôn ngữ",
     "yes": "Có",
-    "no": "Không"
+    "no": "Không",
+    "confirm": "Xác nhận",
+    "see_all": "Xem tất cả",
+    "ok": "OK",
+    "unexpected_error": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại."
   },
   "time": {
     "just_now": "Vừa xong",
@@ -66,7 +70,15 @@
       "password_empty": "Vui lòng nhập mật khẩu",
       "password_invalid": "Vui lòng nhập mật khẩu hợp lệ",
       "password_short": "Mật khẩu phải có ít nhất 6 ký tự",
-      "password_match": "Mật khẩu không khớp"
+      "password_match": "Mật khẩu không khớp",
+      "subtitle": "Đăng nhập vào tài khoản của bạn",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Mật khẩu",
+      "loginButton": "Đăng nhập",
+      "dontHaveAccount": "Chưa có tài khoản? ",
+      "invalidEmail": "Định dạng email không hợp lệ",
+      "invalidPassword": "Mật khẩu phải có ít nhất 8 ký tự",
+      "emptyField": "Trường này là bắt buộc"
     },
     "register": {
       "title": "Tạo tài khoản",
@@ -85,7 +97,25 @@
       "password_empty": "Vui lòng nhập mật khẩu",
       "confirmPassword_empty": "Vui lòng xác nhận mật khẩu",
       "password_short": "Mật khẩu phải có ít nhất 6 ký tự",
-      "password_match": "Mật khẩu không khớp"
+      "password_match": "Mật khẩu không khớp",
+      "subtitle": "Nhập thông tin chi tiết để bắt đầu",
+      "firstNamePlaceholder": "Tên",
+      "lastNamePlaceholder": "Họ",
+      "emailPlaceholder": "Email",
+      "passwordPlaceholder": "Mật khẩu",
+      "confirmPasswordPlaceholder": "Xác nhận mật khẩu",
+      "first_name_empty": "Tên không được để trống",
+      "last_name_empty": "Họ không được để trống",
+      "email_invalid": "Định dạng email không hợp lệ",
+      "password_invalid": "Mật khẩu phải có ít nhất một chữ cái, một số và một ký tự đặc biệt"
+    },
+    "forgotPassword": {
+      "title": "Đặt lại mật khẩu",
+      "subtitle": "Nhập địa chỉ email của bạn, chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu",
+      "emailPlaceholder": "Email",
+      "sendButton": "Gửi liên kết đặt lại",
+      "backToLogin": "Quay lại đăng nhập",
+      "success": "Liên kết đặt lại đã được gửi đến email của bạn"
     }
   },
   "otp": {
@@ -93,13 +123,15 @@
     "description": "Nhập mã OTP đã được gửi đến email",
     "receive": "Không nhận được OTP? ",
     "resendOtp": "Gửi lại",
-    "resendOtp_after": "Gửi lại OTP trong",
+    "resendOtp_after": "Gửi lại trong",
     "verify": "Xác thực",
     "otp_empty": "Vui lòng nhập mã OTP",
     "otp_ishort": "Mã OTP phải có ít nhất 6 ký tự",
     "otp_incorrect": "Mã OTP không chính xác",
     "otp_expired": "Mã OTP đã hết hạn",
-    "verify_success": "Xác thực OTP thành công"
+    "verify_success": "Xác thực OTP thành công",
+    "verifySuccess": "Xác thực email thành công",
+    "resendOtp_after": "Gửi lại trong"
   },
   "user": {
     "email_existed": "Email đã tồn tại"
@@ -144,6 +176,10 @@
   },
   "appointments": {
     "title": "Đặt lịch hẹn",
+    "booking_tab": "Đặt lịch",
+    "history_tab": "Lịch sử",
+    "no_appointments": "Bạn chưa có lịch sử đặt lịch nào",
+    "book_now": "Đặt lịch ngay",
     "select_branch": "Chọn chi nhánh",
     "branch_description": "Chọn chi nhánh thuận tiện cho bạn",
     "select_services": "Chọn dịch vụ",
@@ -166,7 +202,15 @@
     "today": "Hôm nay",
     "confirm_booking": "Xác nhận đặt lịch",
     "booking_successful": "Đặt lịch thành công",
-    "booking_failed": "Đặt lịch thất bại"
+    "booking_failed": "Đặt lịch thất bại",
+    "no_stylists_available": "Không có stylist khả dụng",
+    "no_time_slots": "Không có khung giờ nào khả dụng",
+    "complete_all_steps": "Vui lòng hoàn thành tất cả các bước",
+    "cancel_appointment": "Huỷ lịch hẹn",
+    "cancel_confirmation": "Bạn có chắc chắn muốn huỷ lịch hẹn này không?",
+    "cancel_success": "Huỷ lịch hẹn thành công",
+    "cancel_failed": "Huỷ lịch hẹn thất bại",
+    "no_services": "Không có dịch vụ nào được chọn"
   },
   "settings": {
     "title": "Cài đặt",
@@ -201,5 +245,52 @@
     "discount": "Giảm giá",
     "final_price": "Thành tiền",
     "no_vouchers": "Không có voucher nào khả dụng"
+  },
+  "hair_try_on": {
+    "title": "Thử kiểu tóc với AI",
+    "description": "Sử dụng AI để thử các kiểu tóc và màu tóc khác nhau",
+    "upload_photo": "Tải lên ảnh",
+    "take_photo": "Chụp ảnh",
+    "select_style": "Chọn kiểu",
+    "try_on_now": "Thử ngay bây giờ",
+    "no_styles_found": "Không tìm thấy kiểu tóc",
+    "loading_styles": "Đang tải kiểu tóc...",
+    "error_loading_styles": "Lỗi khi tải kiểu tóc. Vui lòng thử lại.",
+    "apply_style": "Áp dụng kiểu",
+    "style_applied": "Áp dụng kiểu thành công",
+    "step1": "Bước 1: Tải lên ảnh của bạn",
+    "step2": "Bước 2: Chọn kiểu tóc",
+    "step3": "Bước 3: Chọn màu tóc",
+    "step4": "Hoàn thành! Đây là kiểu tóc mới của bạn",
+    "yourPhoto": "Ảnh của bạn",
+    "hairShape": "Kiểu tóc",
+    "hairColor": "Màu tóc",
+    "upload": "Tải lên",
+    "continue": "Tiếp tục",
+    "tryOnNow": "Thử ngay",
+    "reset": "Đặt lại",
+    "tryAnotherHairstyle": "Thử kiểu tóc khác",
+    "beforeLabel": "Trước",
+    "afterLabel": "Sau",
+    "bookAppointment": "Đặt lịch hẹn",
+    "processingHairstyle": "Đang xử lý kiểu tóc của bạn...",
+    "selectSuggestions": "Hoặc chọn từ gợi ý của chúng tôi:",
+    "colorSuggestions": "Hoặc chọn từ các màu gợi ý:",
+    "previewInfo": "Đây là xem trước của kiểu tóc bạn đã chọn. Để có kết quả tốt nhất, hãy đến salon của chúng tôi!",
+    "missingPhoto": "Vui lòng tải lên ảnh của bạn trước.",
+    "missingHairStyle": "Vui lòng chọn hoặc tải lên kiểu tóc.",
+    "missingHairColor": "Vui lòng chọn hoặc tải lên màu tóc.",
+    "missingImages": "Vui lòng tải lên đầy đủ ba hình ảnh trước.",
+    "processingError": "Đã xảy ra lỗi khi xử lý hình ảnh của bạn. Vui lòng kiểm tra kết nối internet và thử lại.",
+    "camera": "Máy ảnh",
+    "gallery": "Thư viện",
+    "cancel": "Hủy",
+    "changeImage": "Thay đổi hình ảnh",
+    "uploadImage": "Tải lên hình ảnh",
+    "face_detection_error": "Không thể phát hiện khuôn mặt trong hình ảnh. Vui lòng sử dụng ảnh rõ nét với khuôn mặt nhìn thẳng vào camera.",
+    "processing_error": "Lỗi xử lý hình ảnh của bạn. Vui lòng thử lại với một ảnh khác.",
+    "no_face_detected": "Không phát hiện khuôn mặt trong ảnh. Vui lòng sử dụng ảnh rõ nét với khuôn mặt có thể nhìn thấy được.",
+    "permission_needed": "Cần cấp quyền máy ảnh và thư viện để sử dụng tính năng này.",
+    "upload_image_prompt": "Bạn muốn tải lên hình ảnh bằng cách nào?"
   }
 }
