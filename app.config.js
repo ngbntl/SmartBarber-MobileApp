@@ -41,6 +41,7 @@ module.exports = {
     extra: {
       API_URL: process.env.API_URL,
       API_NETWORK: process.env.API_NETWORK,
+      SERVER_AI_URL: process.env.SERVER_AI_URL,
     },
   },
 };

@@ -10,16 +10,17 @@ import {
   Platform,
   FlatList,
   Dimensions,
-  StatusBar as RNStatusBar,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
-import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { router } from "expo-router";
 import { useTranslation } from "react-i18next";
+import Constants from "expo-constants";
+import { useNotification } from "@/hooks/useNotification";
+import Toast from "@/components/ui/Toast";
 
 const hairStyleSamples = [
   { id: 1, name: "Bob Cut", image: "https://i.imgur.com/JQbiLVA.png" },
@@ -89,8 +90,8 @@ const HairTryOnScreen = () => {
   const [step, setStep] = useState(1);
   const [selectedHairStyle, setSelectedHairStyle] = useState(null);
   const [selectedHairColor, setSelectedHairColor] = useState(null);
+  const { appNotification, toast, setToast } = useNotification();
 
-  // Request permission for camera and gallery access
   useEffect(() => {
     (async () => {
       if (Platform.OS !== "web") {
@@ -100,10 +101,7 @@ const HairTryOnScreen = () => {
           await ImagePicker.requestMediaLibraryPermissionsAsync();
 
         if (cameraStatus !== "granted" || galleryStatus !== "granted") {
-          Alert.alert(
-            "Permission needed",
-            "Camera and gallery permissions are required for this feature."
-          );
+          Alert.alert(t("common.error"), t("hair_try_on.permission_needed"));
         }
       }
     })();
@@ -145,23 +143,17 @@ const HairTryOnScreen = () => {
 
   const goToNextStep = () => {
     if (step === 1 && !userImage) {
-      Alert.alert("Missing Photo", "Please upload or take your photo first.");
+      Alert.alert(t("common.error"), t("hair_try_on.missingPhoto"));
       return;
     }
 
     if (step === 2 && !hairShapeImage) {
-      Alert.alert(
-        "Missing Hair Style",
-        "Please select or upload a hair style."
-      );
+      Alert.alert(t("common.error"), t("hair_try_on.missingHairStyle"));
       return;
     }
 
     if (step === 3 && !hairColorImage) {
-      Alert.alert(
-        "Missing Hair Color",
-        "Please select or upload a hair color."
-      );
+      Alert.alert(t("common.error"), t("hair_try_on.missingHairColor"));
       return;
     }
 
@@ -176,29 +168,184 @@ const HairTryOnScreen = () => {
 
   const processImages = async () => {
     if (!userImage || !hairShapeImage || !hairColorImage) {
-      Alert.alert(
-        "Missing images",
-        "Please upload all three required images first."
-      );
+      Alert.alert(t("common.error"), t("hair_try_on.missingImages"));
       return;
     }
 
     setIsProcessing(true);
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const formData = new FormData();
 
-      setResultImage(hairShapeImage);
-      setStep(4);
+      const getUserFileName = (uri) => {
+        const uriParts = uri.split("/");
+        return uriParts[uriParts.length - 1];
+      };
+
+      const isExternalUrl = (url) =>
+        url.startsWith("http") && !url.includes("file:");
+
+      const prepareImageForUpload = async (uri, fieldName, defaultFileName) => {
+        try {
+          if (isExternalUrl(uri)) {
+            console.log(`Fetching external image: ${uri}`);
+            const response = await fetch(uri);
+            const blob = await response.blob();
+            console.log(
+              `Successfully fetched external image (${fieldName}): ${blob.size} bytes`
+            );
+
+            return {
+              uri: uri,
+              type: blob.type || "image/jpeg",
+              name: defaultFileName,
+            };
+          } else {
+            return {
+              uri: Platform.OS === "android" ? uri : uri.replace("file://", ""),
+              type: "image/jpeg",
+              name: getUserFileName(uri) || defaultFileName,
+            };
+          }
+        } catch (error) {
+          console.error(`Error preparing ${fieldName}:`, error);
+          throw new Error(`Failed to prepare ${fieldName}: ${error.message}`);
+        }
+      };
+
+      try {
+        const faceImage = await prepareImageForUpload(
+          userImage,
+          "face_file",
+          "user-image.jpg"
+        );
+        const shapeImage = await prepareImageForUpload(
+          hairShapeImage,
+          "shape_file",
+          "hair-shape.jpg"
+        );
+        const colorImage = await prepareImageForUpload(
+          hairColorImage,
+          "color_file",
+          "hair-color.jpg"
+        );
+
+        formData.append("face_file", faceImage as any);
+        formData.append("shape_file", shapeImage as any);
+        formData.append("color_file", colorImage as any);
+
+        console.log("FormData created successfully with all three images");
+      } catch (error) {
+        console.error("Failed to prepare images:", error);
+        throw error;
+      }
+
+      const { expoConfig } = Constants;
+
+      let serverAIUrl = expoConfig?.extra?.SERVER_AI_URL
+        ? `${expoConfig.extra.SERVER_AI_URL}`
+        : "https://30a4-34-125-113-247.ngrok-free.app";
+
+      if (!serverAIUrl.endsWith("/")) {
+        serverAIUrl += "/";
+      }
+      serverAIUrl += "swap_hair/";
+
+      console.log("Sending request to serverAI URL:", serverAIUrl);
+
+      try {
+        const response = await fetch(serverAIUrl, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+          },
+          body: formData,
+          redirect: "follow",
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log("AI processing completed successfully:", result);
+          handleResult(result);
+        } else {
+          console.error("Server returned error status:", response.status);
+          const errorText = await response.text();
+          console.error("Server error response:", errorText);
+
+          try {
+            const errorJson = JSON.parse(errorText);
+
+            if (
+              errorJson.error &&
+              errorJson.error.includes("No faces detected")
+            ) {
+              appNotification({
+                message: t("hair_try_on.no_face_detected"),
+                statusCode: 400,
+              });
+
+              setStep(1);
+              setIsProcessing(false);
+              return;
+            } else {
+              throw new Error(
+                `Server error: ${errorJson.error || "Unknown error"}`
+              );
+            }
+          } catch (parseError) {
+            if (response.status === 500) {
+              appNotification({
+                message: t("hair_try_on.face_detection_error"),
+                statusCode: 500,
+              });
+              setStep(1);
+              setIsProcessing(false);
+              return;
+            }
+
+            throw new Error(
+              `Server error: ${response.status} ${response.statusText}`
+            );
+          }
+        }
+      } catch (error) {
+        console.error("Error during fetch:", error);
+        throw error;
+      }
     } catch (error) {
-      Alert.alert(
-        "Processing error",
-        "An error occurred while processing your images."
-      );
-      console.error("Error processing images:", error);
-    } finally {
+      console.error("Error in processImages function:", error);
+
+      if (
+        error.message &&
+        (error.message.includes("No faces detected") ||
+          (typeof error === "object" &&
+            error.error &&
+            error.error.includes("No faces detected")))
+      ) {
+        appNotification({
+          message: t("hair_try_on.no_face_detected"),
+          statusCode: 500,
+        });
+        setStep(1);
+      } else {
+        appNotification({
+          message: `${t("hair_try_on.processing_error")}: ${error.message}`,
+          statusCode: 400,
+        });
+      }
+
       setIsProcessing(false);
     }
+  };
+
+  const handleResult = (result) => {
+    if (result && result.result_image_url) {
+      setResultImage(result.result_image_url);
+    } else {
+      setResultImage(hairShapeImage);
+      console.warn("API didn't return an image URL, using fallback image");
+    }
+    setStep(4);
   };
 
   const resetImages = () => {
@@ -287,18 +434,18 @@ const HairTryOnScreen = () => {
             className="absolute bottom-2.5 right-2.5 bg-primary rounded-full w-10 h-10 items-center justify-center"
             onPress={() =>
               Alert.alert(
-                "Change Image",
-                "How would you like to upload your image?",
+                t("hair_try_on.changeImage"),
+                t("hair_try_on.upload_image_prompt"),
                 [
                   {
-                    text: "Camera",
+                    text: t("hair_try_on.camera"),
                     onPress: () => pickImage("camera", setter),
                   },
                   {
-                    text: "Gallery",
+                    text: t("hair_try_on.gallery"),
                     onPress: () => pickImage("gallery", setter),
                   },
-                  { text: "Cancel", style: "cancel" },
+                  { text: t("common.cancel"), style: "cancel" },
                 ]
               )
             }
@@ -308,7 +455,7 @@ const HairTryOnScreen = () => {
         </View>
       ) : (
         <TouchableOpacity
-          className={`border-2 border-primary border-dashed rounded-xl items-center justify-center p-10 h-[180px] ${
+          className={`border-2 border-primary border-dashed rounded-xl items-center justify-center aspect-square w-full ${
             step === 1 ||
             (step === 2 && setter === setHairShapeImage) ||
             (step === 3 && setter === setHairColorImage)
@@ -317,15 +464,18 @@ const HairTryOnScreen = () => {
           }`}
           onPress={() =>
             Alert.alert(
-              "Upload Image",
-              "How would you like to upload your image?",
+              t("hair_try_on.uploadImage"),
+              t("hair_try_on.upload_image_prompt"),
               [
-                { text: "Camera", onPress: () => pickImage("camera", setter) },
                 {
-                  text: "Gallery",
+                  text: t("hair_try_on.camera"),
+                  onPress: () => pickImage("camera", setter),
+                },
+                {
+                  text: t("hair_try_on.gallery"),
                   onPress: () => pickImage("gallery", setter),
                 },
-                { text: "Cancel", style: "cancel" },
+                { text: t("common.cancel"), style: "cancel" },
               ]
             )
           }
@@ -338,7 +488,9 @@ const HairTryOnScreen = () => {
           }
         >
           <Ionicons name={icon} size={40} color={Colors.primary} />
-          <Text className="mt-2 text-base text-primary">Upload</Text>
+          <Text className="mt-2 text-base text-primary">
+            {t("hair_try_on.upload")}
+          </Text>
         </TouchableOpacity>
       )}
     </View>
@@ -348,12 +500,20 @@ const HairTryOnScreen = () => {
     <View className="flex-1 bg-white">
       <StatusBar style="dark" />
 
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <SafeAreaView edges={["top"]} className="bg-white">
         <View className="flex-row items-center justify-between px-4 py-1.5 border-b border-[#f0f0f0]">
           <TouchableOpacity className="p-1.5" onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color="#000" />
           </TouchableOpacity>
-          <Text className="text-base font-bold">Hair Try-On</Text>
+          <Text className="text-base font-bold">{t("hair_try_on.title")}</Text>
           <View className="w-8" />
         </View>
       </SafeAreaView>
@@ -375,17 +535,17 @@ const HairTryOnScreen = () => {
         </View>
 
         <Text className="text-lg font-semibold text-center mb-3 text-[#333]">
-          {step === 1 && "Step 1: Upload your photo"}
-          {step === 2 && "Step 2: Choose hair shape"}
-          {step === 3 && "Step 3: Pick hair color"}
-          {step === 4 && "All done! Here's your new look"}
+          {step === 1 && t("hair_try_on.step1")}
+          {step === 2 && t("hair_try_on.step2")}
+          {step === 3 && t("hair_try_on.step3")}
+          {step === 4 && t("hair_try_on.step4")}
         </Text>
 
         {step < 4 && (
           <View className="flex-col justify-between mb-5">
             {step === 1 &&
               renderImagePicker(
-                "Your Photo",
+                t("hair_try_on.yourPhoto"),
                 userImage,
                 setUserImage,
                 "person",
@@ -395,7 +555,7 @@ const HairTryOnScreen = () => {
             {step === 2 && (
               <View>
                 {renderImagePicker(
-                  "Hair Shape",
+                  t("hair_try_on.hairShape"),
                   hairShapeImage,
                   setHairShapeImage,
                   "cut",
@@ -404,7 +564,7 @@ const HairTryOnScreen = () => {
 
                 <View className="mb-4">
                   <Text className="text-sm text-gray-500 mb-2">
-                    Or select from our style suggestions:
+                    {t("hair_try_on.selectSuggestions")}
                   </Text>
                   <FlatList
                     data={hairStyleSamples}
@@ -421,7 +581,7 @@ const HairTryOnScreen = () => {
             {step === 3 && (
               <View>
                 {renderImagePicker(
-                  "Hair Color",
+                  t("hair_try_on.hairColor"),
                   hairColorImage,
                   setHairColorImage,
                   "color-palette",
@@ -430,7 +590,7 @@ const HairTryOnScreen = () => {
 
                 <View className="mb-4">
                   <Text className="text-sm text-gray-500 mb-2">
-                    Or select from our color suggestions:
+                    {t("hair_try_on.colorSuggestions")}
                   </Text>
                   <FlatList
                     data={hairColorSamples}
@@ -448,20 +608,28 @@ const HairTryOnScreen = () => {
 
         {step === 4 && resultImage && (
           <View className="items-center py-5">
-            <View className="flex-row items-center justify-center mb-8">
-              <View className="items-center">
-                <Text className="text-base font-semibold mb-2">Before</Text>
+            <View className="flex-col items-center justify-center mb-8">
+              <View className="items-center mb-6">
+                <Text className="text-lg font-semibold mb-3">
+                  {t("hair_try_on.beforeLabel")}
+                </Text>
                 <Image
                   source={{ uri: userImage }}
-                  className="w-[140px] h-[140px] rounded-lg mx-2.5"
+                  className="w-[250px] h-[250px] rounded-lg"
+                  style={{ resizeMode: "contain" }}
                 />
               </View>
-              <Ionicons name="arrow-forward" size={30} color={Colors.primary} />
-              <View className="items-center">
-                <Text className="text-base font-semibold mb-2">After</Text>
+
+              <Ionicons name="arrow-down" size={30} color={Colors.primary} />
+
+              <View className="items-center mt-6">
+                <Text className="text-lg font-semibold mb-3">
+                  {t("hair_try_on.afterLabel")}
+                </Text>
                 <Image
                   source={{ uri: resultImage }}
-                  className="w-[140px] h-[140px] rounded-lg mx-2.5"
+                  className="w-[250px] h-[250px] rounded-lg"
+                  style={{ resizeMode: "contain" }}
                 />
               </View>
             </View>
@@ -473,8 +641,7 @@ const HairTryOnScreen = () => {
                 color={Colors.primary}
               />
               <Text className="flex-1 ml-3 text-[#333]">
-                This is a preview of how you might look with your selected
-                hairstyle. For best results, visit our salon!
+                {t("hair_try_on.previewInfo")}
               </Text>
             </View>
 
@@ -483,7 +650,7 @@ const HairTryOnScreen = () => {
               onPress={() => router.push("/appointments")}
             >
               <Text className="text-white font-bold text-base">
-                Book an Appointment
+                {t("hair_try_on.bookAppointment")}
               </Text>
             </TouchableOpacity>
           </View>
@@ -494,7 +661,7 @@ const HairTryOnScreen = () => {
             <View className="bg-white p-8 rounded-xl items-center justify-center shadow-md">
               <ActivityIndicator size="large" color={Colors.primary} />
               <Text className="mt-4 text-base font-medium">
-                Processing your hairstyle...
+                {t("hair_try_on.processingHairstyle")}
               </Text>
             </View>
           </View>
@@ -511,7 +678,9 @@ const HairTryOnScreen = () => {
               className="py-3 px-4 border border-primary rounded-lg flex-1 mr-2.5 items-center"
               onPress={resetImages}
             >
-              <Text className="text-primary font-semibold">Reset</Text>
+              <Text className="text-primary font-semibold">
+                {t("hair_try_on.reset")}
+              </Text>
             </TouchableOpacity>
 
             {step === 3 && userImage && hairShapeImage && hairColorImage ? (
@@ -520,7 +689,9 @@ const HairTryOnScreen = () => {
                 onPress={processImages}
                 disabled={isProcessing}
               >
-                <Text className="text-white font-semibold">Try On Now</Text>
+                <Text className="text-white font-semibold">
+                  {t("hair_try_on.tryOnNow")}
+                </Text>
               </TouchableOpacity>
             ) : (
               <TouchableOpacity
@@ -538,7 +709,9 @@ const HairTryOnScreen = () => {
                   (step === 3 && !hairColorImage)
                 }
               >
-                <Text className="text-white font-semibold">Tiếp tục</Text>
+                <Text className="text-white font-semibold">
+                  {t("hair_try_on.continue")}
+                </Text>
               </TouchableOpacity>
             )}
           </View>
@@ -548,7 +721,7 @@ const HairTryOnScreen = () => {
             onPress={resetImages}
           >
             <Text className="text-primary font-semibold">
-              Try Another Hairstyle
+              {t("hair_try_on.tryAnotherHairstyle")}
             </Text>
           </TouchableOpacity>
         )}

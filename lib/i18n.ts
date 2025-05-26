@@ -9,12 +9,12 @@ import ja from "../translations/ja.json";
 // Safely get device language with fallback
 const deviceLanguage = Localization.locale
   ? Localization.locale.split("-")[0]
-  : "vi";
+  : "en";
 
 const supportedLanguages = ["vi", "en", "ja"];
 const defaultLanguage = supportedLanguages.includes(deviceLanguage)
   ? deviceLanguage
-  : "vi";
+  : "en";
 
 const resources = {
   en: { translation: en },
@@ -24,7 +24,7 @@ const resources = {
 i18n.use(initReactI18next).init({
   resources,
   lng: defaultLanguage,
-  fallbackLng: "vi",
+  fallbackLng: "en",
   debug: process.env.NODE_ENV === "development",
   interpolation: {
     escapeValue: false,
@@ -37,7 +37,6 @@ i18n.use(initReactI18next).init({
   missingKeyHandler: () => {},
 });
 
-// Mark as initialized to help with debugging
 i18n.isInitialized = true;
 
 export default i18n;

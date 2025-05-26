@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
+  Alert,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -13,12 +14,34 @@ import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useSelector } from "react-redux";
+import { useLogout } from "@/utils/auth";
+import { useTranslation } from "react-i18next";
 
 const SettingsScreen = () => {
+  const { t } = useTranslation();
   const userInfo = useSelector((state: any) => state.auth.userInfo);
+  const logout = useLogout();
   const firstName = userInfo?.firstName || "Matthew";
   const lastName = userInfo?.lastName || "McCoy";
   const email = userInfo?.email || "matthew.mccoy@example.com";
+
+  const handleLogout = () => {
+    Alert.alert(
+      t("settings.logout_title", "Logout"),
+      t("settings.logout_message", "Are you sure you want to logout?"),
+      [
+        {
+          text: t("common.cancel", "Cancel"),
+          style: "cancel",
+        },
+        {
+          text: t("common.logout", "Logout"),
+          style: "destructive",
+          onPress: () => logout(),
+        },
+      ]
+    );
+  };
 
   const settingsSections = [
     {
@@ -98,9 +121,11 @@ const SettingsScreen = () => {
           ))}
 
           {/* Logout Button */}
-          <TouchableOpacity style={styles.logoutButton}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
             <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
-            <Text style={styles.logoutText}>Log Out</Text>
+            <Text style={styles.logoutText}>
+              {t("settings.logout", "Log Out")}
+            </Text>
           </TouchableOpacity>
 
           <View style={{ height: 30 }} />

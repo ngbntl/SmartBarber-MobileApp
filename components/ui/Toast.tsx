@@ -146,11 +146,10 @@ const Toast = ({
       case "warning":
         return <Icon name="alert" size={20} color={getIconColor()} />;
       default:
-        return <Icon name="info" size={20} color={getIconColor()} />;
+      // return <Icon name="info" size={20} color={getIconColor()} />;
     }
   };
 
-  // Calculate top position based on platform and safe areas
   const getToastPosition = () => {
     if (position === "bottom") {
       return {
@@ -158,7 +157,6 @@ const Toast = ({
         bottom: insets.bottom > 0 ? insets.bottom + 10 : 20,
       };
     } else {
-      // For top position
       const safeTopMargin = Math.max(insets.top, statusBarHeight);
       return {
         top: safeTopMargin + 10,

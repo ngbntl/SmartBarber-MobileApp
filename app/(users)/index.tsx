@@ -6,6 +6,7 @@ import {
   Image,
   Dimensions,
   RefreshControl,
+  Alert,
 } from "react-native";
 
 import Carousel from "react-native-reanimated-carousel";
@@ -31,6 +32,8 @@ import ServicesApi from "@/api/services";
 import BranchesApi from "@/api/branches";
 import { router } from "expo-router";
 import i18n from "@/lib/i18n";
+import { useNotification } from "@/hooks/useNotification";
+import Toast from "@/components/ui/Toast";
 
 // Helper function to get current locale
 const getCurrentLocale = (): string => {
@@ -56,7 +59,9 @@ const HomeScreen = () => {
   const [branches, setBranches] = useState<any[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [refreshing, setRefreshing] = useState(false);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
   const carouselRef = useRef(null);
+  const { appNotification, toast, setToast } = useNotification();
 
   const user = useSelector((state: RootState) => state.auth.userInfo);
   const appointmentsApi = new AppointmentsApi();
@@ -68,12 +73,24 @@ const HomeScreen = () => {
     await Promise.all([fetchAppointments(), fetchServices(), fetchBranches()]);
   };
 
-  // Hàm tải các cuộc hẹn
+  const filterUpcomingAppointments = (appointments: Appointment[]) => {
+    const now = new Date();
+    return appointments.filter((appointment) => {
+      const appointmentDate = new Date(appointment.appointmentDate);
+      const status = appointment.status?.toLowerCase();
+      return (
+        appointmentDate >= now &&
+        (status === "pending" || status === "confirmed")
+      );
+    });
+  };
+
   const fetchAppointments = async () => {
     try {
       if (user) {
         const appointments = await appointmentsApi.getAppointments(user.id);
-        setUpcomingAppointments(appointments.items || []);
+        const upcoming = filterUpcomingAppointments(appointments.items || []);
+        setUpcomingAppointments(upcoming);
       }
     } catch (error) {
       console.error("Error fetching appointments:", error);
@@ -81,7 +98,42 @@ const HomeScreen = () => {
     }
   };
 
-  // Hàm tải các dịch vụ
+  const handleCancelAppointment = (appointmentId: string) => {
+    Alert.alert(
+      t("appointments.cancel_appointment"),
+      t("appointments.cancel_confirmation"),
+      [
+        {
+          text: t("common.no"),
+          style: "cancel",
+        },
+        {
+          text: t("common.yes"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setCancelingId(appointmentId);
+              const response = await appointmentsApi.cancelAppointment(
+                appointmentId
+              );
+              if (response) {
+                appNotification(response);
+                setTimeout(() => {
+                  fetchAppointments();
+                }, 1000);
+              }
+            } catch (error: any) {
+              console.error("Error canceling appointment:", error);
+              appNotification(error);
+            } finally {
+              setCancelingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
   const fetchServices = async () => {
     try {
       const services = await servicesApi.getServices();
@@ -92,7 +144,6 @@ const HomeScreen = () => {
     }
   };
 
-  // Hàm tải các chi nhánh
   const fetchBranches = async () => {
     try {
       const branches = await branchesApi.getBranches();
@@ -103,19 +154,16 @@ const HomeScreen = () => {
     }
   };
 
-  // Xử lý khi người dùng kéo xuống để refresh
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchData();
     setRefreshing(false);
   }, [user]);
 
-  // Tải dữ liệu khi component được tạo lần đầu
   useEffect(() => {
     fetchData();
   }, [user]);
 
-  // Tải lại dữ liệu mỗi khi màn hình được focus
   useFocusEffect(
     useCallback(() => {
       fetchAppointments();
@@ -155,7 +203,6 @@ const HomeScreen = () => {
       return (
         <View className="h-full">
           <View className="rounded-2xl overflow-hidden relative h-full">
-            {/* Use image as background instead of LinearGradient */}
             <Image
               source={{ uri: "https://i.imgur.com/JQdgGsL.jpg" }}
               style={{
@@ -193,7 +240,22 @@ const HomeScreen = () => {
                   className="bg-white rounded-full py-3 px-6 shadow-md w-36 flex-row items-center justify-center"
                   activeOpacity={0.8}
                   onPress={() => {
-                    router.push("/");
+                    try {
+                      router.push("/hairTryOn");
+                    } catch (error) {
+                      console.error("Error navigating to hair try-on:", error);
+                      if (error.message && error.message.includes("500")) {
+                        appNotification({
+                          message: t("hairTryOn.face_detection_error"),
+                          statusCode: 500,
+                        });
+                      } else {
+                        appNotification({
+                          message: t("common.unexpected_error"),
+                          statusCode: 400,
+                        });
+                      }
+                    }
                   }}
                 >
                   <Text className="font-bold text-primary mr-2">
@@ -236,6 +298,14 @@ const HomeScreen = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+
         <View className="flex-row justify-between items-center px-6 pt-4 pb-2 mb-5">
           <View>
             <Text className="text-base text-gray-500 font-medium">
@@ -285,35 +355,25 @@ const HomeScreen = () => {
               parallaxScrollingOffset: 50,
             }}
           />
-          {/* <View className="flex-row justify-center items-center mt-4 h-5">
-            {introSlides.map((_, index) => (
-              <View
-                key={index}
-                className={`h-2 w-2 rounded-full mx-1 ${
-                  index === activeIndex ? "bg-primary w-4" : "bg-gray-300"
-                }`}
-              />
-            ))}
-          </View> */}
         </View>
 
         {/* Upcoming Appointments */}
-        {upcomingAppointments && upcomingAppointments.length > 0 ? (
-          <View className="mb-8 px-6">
-            <View className="flex-row justify-between items-center mb-4">
-              <Text className="text-lg font-bold text-[#333]">
-                {t("home.upcoming")}
+        <View className="mb-8 px-6">
+          <View className="flex-row justify-between items-center mb-4">
+            <Text className="text-lg font-bold text-[#333]">
+              {t("home.upcoming")}
+            </Text>
+            <TouchableOpacity
+              activeOpacity={0.7}
+              onPress={() => router.push("/(users)/appointments")}
+            >
+              <Text className="text-primary font-medium">
+                {t("common.see_all")}
               </Text>
-              {/* <TouchableOpacity
-                activeOpacity={0.7}
-                onPress={() => router.push("/(users)/appointments")}
-              >
-                <Text className="text-primary font-medium">
-                  {t("common.see_all")}
-                </Text>
-              </TouchableOpacity> */}
-            </View>
-            {/* Replacing horizontal ScrollView with vertical list */}
+            </TouchableOpacity>
+          </View>
+
+          {upcomingAppointments.length > 0 ? (
             <View>
               {upcomingAppointments.slice(0, 3).map((appointment) => (
                 <TouchableOpacity
@@ -435,11 +495,50 @@ const HomeScreen = () => {
                       {formatPrice(parseFloat(appointment.finalAmount || "0"))}
                     </Text>
                   </View>
+
+                  <TouchableOpacity
+                    className="mt-3 py-2 px-4 border border-red-500 rounded-lg self-end"
+                    onPress={() => handleCancelAppointment(appointment.id)}
+                    disabled={cancelingId === appointment.id}
+                  >
+                    <Text className="text-red-500 font-medium text-sm">
+                      {cancelingId === appointment.id
+                        ? t("common.loading")
+                        : t("appointments.cancel_appointment")}
+                    </Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
               ))}
+
+              {upcomingAppointments.length > 0 &&
+                upcomingAppointments.length > 3 && (
+                  <TouchableOpacity
+                    className="items-center py-3"
+                    onPress={() => router.push("/(users)/appointments")}
+                  >
+                    <Text className="text-primary font-medium">
+                      {t("home.view_all")} ({upcomingAppointments.length})
+                    </Text>
+                  </TouchableOpacity>
+                )}
             </View>
-          </View>
-        ) : null}
+          ) : (
+            <View className="bg-white rounded-2xl p-6 items-center justify-center">
+              <Ionicons name="calendar-outline" size={40} color="lightgray" />
+              <Text className="text-gray-500 mt-3 mb-3 text-center">
+                {t("appointments.no_appointments")}
+              </Text>
+              <TouchableOpacity
+                className="mt-2 bg-primary py-2 px-6 rounded-lg"
+                onPress={() => router.push("/(users)/appointments")}
+              >
+                <Text className="text-white font-medium">
+                  {t("home.book_now")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
 
         {/* Services */}
         <View className="mb-8">

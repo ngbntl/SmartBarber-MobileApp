@@ -7,22 +7,25 @@ import {
   Image,
   SafeAreaView,
   Alert,
+  FlatList,
 } from "react-native";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useTranslation } from "react-i18next";
+import { StatusBar } from "expo-status-bar";
 
-// Components
 import BranchesModal from "../../components/modal/branchesModal";
 import ServicesModal from "../../components/modal/servicesModal";
 import Button from "../../components/button/Button";
+import AppointmentCard from "@/components/ui/AppointmentCard";
+import Toast from "@/components/ui/Toast";
 
 import { Service } from "../../types/services";
 import { Branch } from "@/types/branch";
+import { Appointment } from "@/types/appointments";
 import {
   formatPrice,
   formatDate,
-  formatTime,
   formatAppointmentDate,
   formatShortDate,
   formatTimeSlot,
@@ -69,9 +72,19 @@ interface AppointmentState {
   selectedVoucher: Voucher | null;
 }
 
+enum TabType {
+  BOOKING = "booking",
+  HISTORY = "history",
+}
+
 const AppointmentsScreen = () => {
   const { t } = useTranslation();
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<TabType>(TabType.BOOKING);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+  const [isLoadingAppointments, setIsLoadingAppointments] = useState(false);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const { appNotification, toast, setToast } = useNotification();
 
   const [bookingState, setBookingState] = useState<AppointmentState>({
     currentStep: 0,
@@ -93,7 +106,6 @@ const AppointmentsScreen = () => {
     selectedDate,
     selectedVoucher,
   } = bookingState;
-  const { appNotification, toast, setToast } = useNotification();
 
   const [availableDates, setAvailableDates] = useState<Date[]>([]);
   const [modalState, setModalState] = useState({
@@ -214,7 +226,6 @@ const AppointmentsScreen = () => {
   };
 
   const formatDateString = (date: Date) => {
-    // Use the fixed formatShortDate with apiFormat=true to ensure YYYY-MM-DD format
     return formatShortDate(date, "-", true);
   };
 
@@ -332,11 +343,13 @@ const AppointmentsScreen = () => {
         if (res) {
           appNotification(res);
           resetBookingForm();
+
+          setTimeout(() => {
+            router.push("/(users)");
+          }, 1500);
         } else {
           alert(t("appointments.booking_failed"));
         }
-
-        router.push("/(users)");
       } else {
         alert(t("appointments.complete_all_steps"));
       }
@@ -410,14 +423,118 @@ const AppointmentsScreen = () => {
     }));
   }, []);
 
-  return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <Stack.Screen />
-      <View className="flex-1 bg-white">
-        <Text className="text-xl font-bold text-center py-4 mt-6">
-          {t("appointments.title")}
-        </Text>
+  const handleCancelAppointment = (appointmentId: string) => {
+    Alert.alert(
+      t("appointments.cancel_appointment"),
+      t("appointments.cancel_confirmation"),
+      [
+        {
+          text: t("common.no"),
+          style: "cancel",
+        },
+        {
+          text: t("common.yes"),
+          style: "destructive",
+          onPress: async () => {
+            try {
+              setCancelingId(appointmentId);
+              const appointmentApi = new AppointmentsApi();
+              const response = await appointmentApi.cancelAppointment(
+                appointmentId
+              );
 
+              if (response) {
+                appNotification(response);
+                fetchAppointments();
+              }
+            } catch (error: any) {
+              appNotification(error);
+            } finally {
+              setCancelingId(null);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const fetchAppointments = useCallback(async () => {
+    if (!user?.id) return;
+
+    setIsLoadingAppointments(true);
+    try {
+      const appointmentApi = new AppointmentsApi();
+      const response = await appointmentApi.getAppointments(user.id);
+      setAppointments(response.items || []);
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+      setAppointments([]);
+    } finally {
+      setIsLoadingAppointments(false);
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (activeTab === TabType.HISTORY) {
+      fetchAppointments();
+    }
+  }, [activeTab, fetchAppointments]);
+
+  return (
+    <View className="flex-1 bg-white">
+      <StatusBar style="dark" />
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      <SafeAreaView edges={["top"]} className="bg-white mt-14">
+        <View className="flex-row items-center justify-between px-4 py-1.5 border-b border-[#f0f0f0]">
+          <TouchableOpacity className="p-1.5" onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={22} color="#000" />
+          </TouchableOpacity>
+          <Text className="text-base font-bold">Hair Try-On</Text>
+          <View className="w-8" />
+        </View>
+      </SafeAreaView>
+
+      <View className="flex-row border-b border-gray-200 mx-4 mb-2">
+        <TouchableOpacity
+          className={`flex-1 py-3 ${
+            activeTab === TabType.BOOKING ? "border-b-2 border-primary" : ""
+          }`}
+          onPress={() => setActiveTab(TabType.BOOKING)}
+        >
+          <Text
+            className={`text-center font-medium ${
+              activeTab === TabType.BOOKING ? "text-primary" : "text-gray-500"
+            }`}
+          >
+            {t("appointments.booking_tab")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          className={`flex-1 py-3 ${
+            activeTab === TabType.HISTORY ? "border-b-2 border-primary" : ""
+          }`}
+          onPress={() => setActiveTab(TabType.HISTORY)}
+        >
+          <Text
+            className={`text-center font-medium ${
+              activeTab === TabType.HISTORY ? "text-primary" : "text-gray-500"
+            }`}
+          >
+            {t("appointments.history_tab")}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      {activeTab === TabType.BOOKING ? (
         <ScrollView className="flex-1">
           <View className="px-4 pb-24">
             <View className="flex-row mb-4">
@@ -760,7 +877,7 @@ const AppointmentsScreen = () => {
                             <Ionicons
                               name="calendar-outline"
                               size={20}
-                              color="#14296d"
+                              color="Color.primary"
                             />
                             <Text className="text-gray-800 ml-2">
                               {getSelectedDateString()}
@@ -768,7 +885,6 @@ const AppointmentsScreen = () => {
                           </View>
                         </View>
 
-                        {/* Date picker - horizontal scrollable dates */}
                         <ScrollView
                           horizontal
                           showsHorizontalScrollIndicator={false}
@@ -786,7 +902,6 @@ const AppointmentsScreen = () => {
                               );
                               const isWorkingDay = dayInfo?.isWorking ?? true; // Default to true if no data
 
-                              // Get day name
                               const dayName = date.toLocaleDateString(
                                 getCurrentLocale(),
                                 { weekday: "short" }
@@ -802,7 +917,7 @@ const AppointmentsScreen = () => {
                                   className={`mr-3 px-4 py-2 rounded-xl ${
                                     selectedDate.getDate() === date.getDate() &&
                                     selectedDate.getMonth() === date.getMonth()
-                                      ? "bg-[#14296d]"
+                                      ? "bg-primary"
                                       : isWorkingDay
                                       ? "bg-gray-100"
                                       : "bg-gray-200"
@@ -851,7 +966,6 @@ const AppointmentsScreen = () => {
                             {availableTimeSlots.length > 0 ? (
                               availableTimeSlots.map(
                                 (slot: any, index: any) => {
-                                  // Convert API time format (09:00:00) to display format (9h00)
                                   const displayTime = formatTimeSlot(
                                     slot.startTime
                                   );
@@ -867,7 +981,7 @@ const AppointmentsScreen = () => {
                                       disabled={!slot.isAvailable}
                                       className={`w-[23%] h-12 items-center justify-center m-1 border ${
                                         selectedTimeSlot === displayTime
-                                          ? "border-[#14296d] bg-white"
+                                          ? "border-primary bg-white"
                                           : slot.isAvailable
                                           ? "border-gray-200 bg-gray-100"
                                           : "border-gray-200 bg-gray-200"
@@ -905,17 +1019,6 @@ const AppointmentsScreen = () => {
                         )}
                       </View>
                     )}
-
-                    {/* Booking Button */}
-                    {selectedTimeSlot && selectedStylist && (
-                      <View className="mt-4">
-                        <Button
-                          title={t("appointments.confirm_booking")}
-                          onPress={handleBooking}
-                          buttonStyle={{ backgroundColor: "#14296d" }}
-                        />
-                      </View>
-                    )}
                   </View>
                 ) : (
                   <View className="bg-gray-100 rounded-md p-4">
@@ -928,7 +1031,59 @@ const AppointmentsScreen = () => {
             </View>
           </View>
         </ScrollView>
-      </View>
+      ) : (
+        <View className="flex-1 px-4">
+          {isLoadingAppointments ? (
+            <View className="flex-1 items-center justify-center">
+              <Loading size="large" color={Colors.primary} />
+            </View>
+          ) : appointments.length > 0 ? (
+            <FlatList
+              data={appointments}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => (
+                <AppointmentCard
+                  appointment={item}
+                  onCancel={handleCancelAppointment}
+                  cancelingId={cancelingId}
+                />
+              )}
+              contentContainerStyle={{ paddingVertical: 16 }}
+            />
+          ) : (
+            <View className="flex-1 items-center justify-center">
+              <Ionicons name="calendar-outline" size={64} color="lightgray" />
+              <Text className="text-gray-500 mt-4 text-center">
+                {t("appointments.no_appointments")}
+              </Text>
+              <TouchableOpacity
+                className="mt-4 bg-primary py-3 px-6 rounded-md"
+                onPress={() => setActiveTab(TabType.BOOKING)}
+              >
+                <Text className="text-white font-medium">
+                  {t("appointments.book_now")}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+      )}
+
+      {activeTab === TabType.BOOKING &&
+        currentStep >= 3 &&
+        selectedDateTime &&
+        selectedStylist && (
+          <View className="absolute bottom-0 left-0 right-0 bg-white px-4 py-3 border-t border-gray-200">
+            <TouchableOpacity
+              className="bg-primary py-4 px-6 rounded-xl items-center"
+              onPress={handleBooking}
+            >
+              <Text className="text-white font-bold text-base">
+                {t("appointments.confirm_booking")}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
 
       {/* Modals */}
       <BranchesModal
@@ -955,7 +1110,7 @@ const AppointmentsScreen = () => {
         selectedBranch={selectedBranch?.id}
         selectedServices={selectedServices}
       />
-    </SafeAreaView>
+    </View>
   );
 };
 

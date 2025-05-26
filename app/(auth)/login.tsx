@@ -175,10 +175,6 @@ const Login = () => {
         password,
       };
       const response = await authApi.login(loginData);
-      if (response && response.error) {
-        appNotification(response);
-        return;
-      }
       if (response) {
         const accessToken = response.accessToken || "";
         const refreshToken = response.refreshToken || "";
@@ -210,8 +206,6 @@ const Login = () => {
         } catch (userError) {
           router.replace("/(tabs)");
         }
-      } else {
-        appNotification(response);
       }
     } catch (error: any) {
       appNotification(error);

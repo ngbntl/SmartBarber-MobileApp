@@ -20,6 +20,9 @@ export const useLanguage = () => {
     },
     changeLanguage,
     currentLanguage,
+    locale: currentLanguage,
     isReady: ready,
   };
 };
+
+export default useLanguage;

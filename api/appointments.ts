@@ -12,9 +12,18 @@ class AppointmentsApi extends Api {
       throw error;
     }
   }
+
   async createAppointment(data: any) {
     try {
       return await this.request("post", "/", data);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async cancelAppointment(appointmentId: string) {
+    try {
+      return await this.request("put", `/cancel/${appointmentId}`);
     } catch (error) {
       throw error;
     }
