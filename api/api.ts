@@ -11,7 +11,7 @@ class Api {
   protected request(
     method: string,
     path = "",
-    data?: object,
+    data?: any,
     headers: Record<string, string> = {}
   ) {
     const url = `${Constants.expoConfig?.extra?.API_NETWORK}/${this.uri}${path}`;
@@ -20,23 +20,51 @@ class Api {
 
     // Lấy token từ Redux store
     const token = store.getState().auth.user?.accessToken;
-    const options: RequestInit = {
+
+    let requestOptions: RequestInit = {
       method,
       headers: {
-        "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
         ...headers,
       } as HeadersInit,
-      ...(method === "GET"
-        ? { body: undefined }
-        : { body: JSON.stringify(data) }),
     };
 
-    return fetch(url, options)
+    if (method !== "GET" && data !== undefined) {
+      if (data instanceof FormData) {
+        console.log("Sending FormData");
+        requestOptions.body = data;
+      } else {
+        requestOptions.headers = {
+          "Content-Type": "application/json",
+          ...requestOptions.headers,
+        };
+        requestOptions.body = JSON.stringify(data);
+      }
+    }
+
+    console.log("Request options:", {
+      method: requestOptions.method,
+      headers: requestOptions.headers,
+      bodyType: requestOptions.body ? typeof requestOptions.body : null,
+      isFormData: requestOptions.body instanceof FormData,
+    });
+
+    return fetch(url, requestOptions)
       .then(async (response) => {
-        const responseData = await response.json();
-        console.log("API Response:", responseData);
-        return responseData;
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`HTTP error ${response.status}: ${errorText}`);
+          throw new Error(`HTTP error ${response.status}: ${errorText}`);
+        }
+
+        try {
+          const responseData = await response.json();
+          console.log("API Response:", responseData);
+          return responseData;
+        } catch (error) {
+          console.log("Response is not JSON:", error);
+          return { success: true, message: "Operation completed" };
+        }
       })
       .catch((error) => {
         console.error("API request error:", error);

@@ -1,29 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   Image,
   Alert,
+  Switch,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView } from "react-native-safe-area-context";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import { Ionicons } from "@expo/vector-icons";
 import { Colors } from "@/constants/Colors";
 import { useSelector } from "react-redux";
 import { useLogout } from "@/utils/auth";
 import { useTranslation } from "react-i18next";
+import { useNotification } from "@/hooks/useNotification";
+import Toast from "@/components/ui/Toast";
+import UpdateUserProfile from "@/components/modal/updateUserProfile";
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
   const userInfo = useSelector((state: any) => state.auth.userInfo);
   const logout = useLogout();
+  const { toast, setToast } = useNotification();
+
   const firstName = userInfo?.firstName || "Matthew";
   const lastName = userInfo?.lastName || "McCoy";
   const email = userInfo?.email || "matthew.mccoy@example.com";
+
+  const [notifications, setNotifications] = useState(true);
+  const [editProfileModalVisible, setEditProfileModalVisible] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
@@ -43,195 +50,181 @@ const SettingsScreen = () => {
     );
   };
 
-  const settingsSections = [
+  const settingItems = [
     {
-      title: "Account",
-      items: [
-        { icon: "person-outline", label: "Personal Information" },
-        { icon: "wallet-outline", label: "Payment Methods" },
-        { icon: "location-outline", label: "Saved Addresses" },
-      ],
+      icon: "shield-outline",
+      label: t("settings.security", "Security"),
+      action: () => console.log("Navigate to Security"),
     },
     {
-      title: "Preferences",
-      items: [
-        { icon: "notifications-outline", label: "Notifications" },
-        { icon: "moon-outline", label: "Dark Mode" },
-        { icon: "language-outline", label: "Language" },
-      ],
+      icon: "language-outline",
+      label: t("settings.language", "Language"),
+      action: () => console.log("Navigate to Language"),
     },
     {
-      title: "Support",
-      items: [
-        { icon: "help-circle-outline", label: "Help Center" },
-        { icon: "chatbox-outline", label: "Contact Us" },
-        { icon: "document-text-outline", label: "Terms & Privacy Policy" },
-      ],
+      icon: "help-circle-outline",
+      label: t("settings.help", "Help Center"),
+      action: () => console.log("Navigate to Help Center"),
+    },
+    {
+      icon: "information-circle-outline",
+      label: t("settings.about", "About"),
+      action: () => console.log("Navigate to About"),
     },
   ];
 
   return (
     <ScreenWrapper>
-      <StatusBar style="dark" />
-      <SafeAreaView style={styles.container}>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.header}>
-            <Text style={styles.title}>Account</Text>
-          </View>
+      <ScrollView
+        className="flex-1 bg-white"
+        showsVerticalScrollIndicator={false}
+      >
+        <StatusBar style="light" />
 
-          {/* Profile Section */}
-          <View style={styles.profileSection}>
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
+
+        {/* Header */}
+        <View
+          className="flex-row justify-between items-center px-5 pt-12 pb-5"
+          style={{ backgroundColor: Colors.primary }}
+        >
+          <Text className="text-2xl font-semibold text-white">
+            {t("profile.title")}
+          </Text>
+        </View>
+
+        <View
+          className="pb-20 items-center relative"
+          style={{ backgroundColor: Colors.primary }}
+        >
+          <View className="w-[100px] h-[100px] rounded-full border-2 border-white overflow-hidden mb-2.5">
             <Image
-              source={require("@/assets/images/logo.png")}
-              style={styles.profileImage}
+              source={
+                userInfo?.avatar
+                  ? { uri: userInfo.avatar }
+                  : require("@/assets/images/default-avatar.png")
+              }
+              className="w-full h-full"
             />
-            <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>
-                {firstName} {lastName}
-              </Text>
-              <Text style={styles.profileEmail}>{email}</Text>
-            </View>
-            <TouchableOpacity style={styles.editButton}>
-              <Ionicons
-                name="create-outline"
-                size={20}
-                color={Colors.primary}
-              />
-            </TouchableOpacity>
           </View>
 
-          {/* Settings Sections */}
-          {settingsSections.map((section, index) => (
-            <View key={index} style={styles.settingsSection}>
-              <Text style={styles.sectionTitle}>{section.title}</Text>
-              {section.items.map((item, itemIndex) => (
-                <TouchableOpacity key={itemIndex} style={styles.settingItem}>
-                  <View style={styles.settingIconContainer}>
-                    <Ionicons
-                      name={item.icon}
-                      size={22}
-                      color={Colors.primary}
-                    />
-                  </View>
-                  <Text style={styles.settingLabel}>{item.label}</Text>
-                  <Ionicons name="chevron-forward" size={22} color="#ccc" />
-                </TouchableOpacity>
-              ))}
-            </View>
-          ))}
+          <Text className="text-2xl font-bold text-white mb-1">
+            {firstName} {lastName}
+          </Text>
 
-          {/* Logout Button */}
-          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-            <Ionicons name="log-out-outline" size={22} color="#FF3B30" />
-            <Text style={styles.logoutText}>
-              {t("settings.logout", "Log Out")}
+          <TouchableOpacity
+            className="flex-row items-center bg-white/20 rounded-full px-4 py-1.5 mt-1 mb-2"
+            onPress={() => setEditProfileModalVisible(true)}
+          >
+            <Ionicons
+              name="create-outline"
+              size={16}
+              color="#fff"
+              style={{ marginRight: 5 }}
+            />
+            <Text className="text-white text-sm font-medium">
+              {t("settings.edit_profile", "Edit Profile")}
             </Text>
           </TouchableOpacity>
 
-          <View style={{ height: 30 }} />
-        </ScrollView>
-      </SafeAreaView>
+          <View className="flex-row items-center mt-1">
+            <Ionicons
+              name="mail-outline"
+              size={18}
+              color="#fff"
+              className="mr-2"
+            />
+            <Text className="text-white text-base">{email}</Text>
+          </View>
+        </View>
+
+        <View className="bg-white -mt-16 rounded-t-[30px] px-5 pt-6 pb-2.5 shadow-lg z-10">
+          <Text className="text-lg font-medium mb-4 text-gray-800">
+            {t("settings.setting", "Setting")}
+          </Text>
+
+          <View className="flex-row justify-between items-center py-4 border-b border-gray-100">
+            <View className="flex-row items-center">
+              <Ionicons
+                name="notifications-outline"
+                size={22}
+                color="#555"
+                className="mr-3"
+              />
+              <Text className="text-base text-gray-800">
+                {t("settings.notifications", "Notification")}
+              </Text>
+            </View>
+            <Switch
+              value={notifications}
+              onValueChange={(value) => setNotifications(value)}
+              trackColor={{ false: "#e0e0e0", true: Colors.primary }}
+              ios_backgroundColor="#e0e0e0"
+              thumbColor={"#fff"}
+            />
+          </View>
+
+          {/* Settings Navigation Items */}
+          {settingItems.map((item, index) => (
+            <TouchableOpacity
+              key={index}
+              className={`flex-row justify-between items-center py-4 ${
+                index === settingItems.length - 1
+                  ? ""
+                  : "border-b border-gray-100"
+              }`}
+              onPress={item.action}
+            >
+              <View className="flex-row items-center">
+                <Ionicons
+                  name={item.icon}
+                  size={22}
+                  color="#555"
+                  className="mr-3"
+                />
+                <Text className="text-base text-gray-800">{item.label}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color="#666" />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity
+          className="flex-row mx-5 mt-5 mb-2.5 py-4 rounded-xl items-center justify-center"
+          style={{ backgroundColor: Colors.primary }}
+          onPress={handleLogout}
+        >
+          <Ionicons
+            name="log-out-outline"
+            size={22}
+            color="#fff"
+            className="mr-2"
+          />
+          <Text className="text-white text-base font-semibold">
+            {t("settings.logout", "Log out")}
+          </Text>
+        </TouchableOpacity>
+
+        {/* App version */}
+        <Text className="text-center text-xs text-gray-400 mb-8">
+          Version 1.0.0
+        </Text>
+      </ScrollView>
+
+      <UpdateUserProfile
+        visible={editProfileModalVisible}
+        onClose={() => setEditProfileModalVisible(false)}
+        userInfo={userInfo}
+      />
     </ScreenWrapper>
   );
 };
 
 export default SettingsScreen;
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#F5F5F5",
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingTop: 20,
-    paddingBottom: 10,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  profileSection: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    margin: 16,
-    borderRadius: 12,
-    padding: 16,
-  },
-  profileImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: "#eee",
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 16,
-  },
-  profileName: {
-    fontSize: 18,
-    fontWeight: "bold",
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: "#666",
-    marginTop: 4,
-  },
-  editButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  settingsSection: {
-    marginBottom: 24,
-    paddingHorizontal: 16,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginBottom: 8,
-    color: "#555",
-  },
-  settingItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 8,
-  },
-  settingIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: "#f0f0f0",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 16,
-  },
-  settingLabel: {
-    flex: 1,
-    fontSize: 16,
-  },
-  logoutButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    marginHorizontal: 16,
-    marginTop: 16,
-  },
-  logoutText: {
-    fontSize: 16,
-    fontWeight: "500",
-    color: "#FF3B30",
-    marginLeft: 8,
-  },
-});
