@@ -95,10 +95,11 @@ const SettingsScreen = () => {
           style={{ backgroundColor: Colors.primary }}
         >
           <Text className="text-2xl font-semibold text-white">
-            {t("profile.title")}
+            {t("settings.title", "Profile")}
           </Text>
         </View>
 
+        {/* Profile Section (Blue background) */}
         <View
           className="pb-20 items-center relative"
           style={{ backgroundColor: Colors.primary }}
@@ -114,26 +115,20 @@ const SettingsScreen = () => {
             />
           </View>
 
-          <Text className="text-2xl font-bold text-white mb-1">
-            {firstName} {lastName}
-          </Text>
-
-          <TouchableOpacity
-            className="flex-row items-center bg-white/20 rounded-full px-4 py-1.5 mt-1 mb-2"
-            onPress={() => setEditProfileModalVisible(true)}
-          >
-            <Ionicons
-              name="create-outline"
-              size={16}
-              color="#fff"
-              style={{ marginRight: 5 }}
-            />
-            <Text className="text-white text-sm font-medium">
-              {t("settings.edit_profile", "Edit Profile")}
+          <View className="flex-row items-center">
+            <Text className="text-2xl font-bold text-white">
+              {firstName} {lastName}
             </Text>
-          </TouchableOpacity>
 
-          <View className="flex-row items-center mt-1">
+            <TouchableOpacity
+              className="ml-2 p-1.5 bg-white/20 rounded-full"
+              onPress={() => setEditProfileModalVisible(true)}
+            >
+              <Ionicons name="create-outline" size={18} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          <View className="flex-row items-center mt-2">
             <Ionicons
               name="mail-outline"
               size={18}

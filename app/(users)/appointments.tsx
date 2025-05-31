@@ -16,7 +16,6 @@ import { StatusBar } from "expo-status-bar";
 
 import BranchesModal from "../../components/modal/branchesModal";
 import ServicesModal from "../../components/modal/servicesModal";
-import Button from "../../components/button/Button";
 import AppointmentCard from "@/components/ui/AppointmentCard";
 import Toast from "@/components/ui/Toast";
 
@@ -283,13 +282,11 @@ const AppointmentsScreen = () => {
   const fetchAvailableTimeSlots = async (stylistId: string, date: Date) => {
     setLoadingState((prevState) => ({ ...prevState, loadingTimeSlots: true }));
     try {
-      // Format the date as YYYY-MM-DD for API request
       const year = date.getFullYear();
       const month = String(date.getMonth() + 1).padStart(2, "0");
       const day = String(date.getDate()).padStart(2, "0");
       const formattedDate = `${year}-${month}-${day}`;
 
-      // Use raw formatted date string instead of using the formatShortDate function
       const response = await timeSlotsApi.getTimeSlotByStylistId(
         stylistId,
         formattedDate
@@ -315,7 +312,6 @@ const AppointmentsScreen = () => {
         selectedDateTime &&
         selectedStylist
       ) {
-        // Format the time from "9h00" to "09:00" format for the API
         let formattedStartTime = "";
         if (selectedTimeSlot) {
           const [hours, minutes] = selectedTimeSlot.split("h");
@@ -330,7 +326,7 @@ const AppointmentsScreen = () => {
           serviceIds: selectedServices.map((service) => service.id),
           stylistId: selectedStylist.id,
           appointmentDate: selectedDateTime.toISOString(),
-          startTime: formattedStartTime, // Using the properly formatted time
+          startTime: formattedStartTime,
           totalAmount: getTotalPrice(),
           discountAmount: calculateDiscountAmount(),
           promotionId: selectedVoucher?.id || null,
@@ -396,7 +392,6 @@ const AppointmentsScreen = () => {
     if (selectedVoucher.discountType === "fixed") {
       return selectedVoucher.discountAmount;
     } else {
-      // Percentage discount
       return Math.round(subtotal * (selectedVoucher.discountAmount / 100));
     }
   };

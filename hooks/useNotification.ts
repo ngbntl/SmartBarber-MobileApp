@@ -17,6 +17,7 @@ export const useNotification = () => {
 
   const appNotification = (messageResponse: MessageResponse) => {
     const type = getNotificationType(messageResponse?.statusCode);
+
     setToast({
       message: t(messageResponse.message),
       type,
