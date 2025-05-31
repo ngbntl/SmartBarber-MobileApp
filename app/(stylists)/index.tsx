@@ -1,512 +1,723 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  RefreshControl,
   Image,
-  StyleSheet,
-  StatusBar,
+  RefreshControl,
+  Platform,
+  ActivityIndicator,
+  Dimensions,
+  Animated,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import StylistApi from "../../api/stylist";
-import AppointmentsApi from "../../api/appointments";
-import { useSelector } from "react-redux";
+import { Stack, useRouter } from "expo-router";
+import { StatusBar } from "expo-status-bar";
 import { Ionicons } from "@expo/vector-icons";
-import Loading from "../../components/ui/Loading";
-import {
-  formatDate,
-  formatTime,
-  isToday,
-  formatPrice,
-} from "@/utils/functions";
+import { useFocusEffect } from "expo-router";
+import { useSelector } from "react-redux";
 import { Colors } from "@/constants/Colors";
-import Icon from "@/assets/icons";
+import ScreenWrapper from "@/components/ui/ScreenWrapper";
+import AppointmentsApi from "@/api/appointments";
+import { formatTime, formatPrice } from "@/utils/functions";
+import { format } from "date-fns";
+import Toast from "@/components/ui/Toast";
+import { useNotification } from "@/hooks/useNotification";
+import { RootState } from "@/store";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
-// Khởi tạo các API
-const stylistApi = new StylistApi();
-const appointmentsApi = new AppointmentsApi();
-
-const StylistHome = () => {
+const StylistHomeScreen = () => {
   const router = useRouter();
-  const { user } = useSelector((state: any) => state.auth);
+  const { toast, setToast } = useNotification();
+  const fadeAnim = useState(new Animated.Value(0))[0];
+
+  const [hasNewNotifications, setHasNewNotifications] = useState(true);
+
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+
+  const [todayAppointments, setTodayAppointments] = useState<any[]>([]);
+  const [reviews, setReviews] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [todayAppointments, setTodayAppointments] = useState([]);
-  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const [stats, setStats] = useState({
-    bookings: 98,
-    listings: 15,
-    reviews: 30,
-    earnings: 45.3,
+    totalAppointments: 0,
+    totalClients: 0,
+    totalRevenue: 0,
   });
 
-  // Lấy dữ liệu từ API
-  const fetchData = async () => {
+  useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, []);
+
+  const fetchAppointments = async () => {
+    if (!userInfo?.id) return;
+
     try {
       setLoading(true);
+      const appointmentsApi = new AppointmentsApi();
+      const response = await appointmentsApi.getStylistAppointments(
+        userInfo.id
+      );
 
-      // Trong thực tế, bạn sẽ lấy dữ liệu thống kê từ API
-      // Ví dụ:
-      // const statsData = await stylistApi.getStats(user.id);
-      // setStats(statsData);
+      const appointments =
+        response && response.items
+          ? response.items
+          : Array.isArray(response)
+          ? response
+          : [];
 
-      // Lấy lịch làm việc và cuộc hẹn của stylist
-      if (user && user.id) {
-        // Lấy các cuộc hẹn của stylist
-        const appointmentsData = await appointmentsApi.getAppointments(user.id);
+      const today = new Date();
 
-        // Phân loại các cuộc hẹn
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+      const todayAppts = appointments.filter((appt: any) => {
+        if (!appt.appointmentDate) return false;
+        const apptDate = new Date(appt.appointmentDate);
+        return (
+          apptDate.getDate() === today.getDate() &&
+          apptDate.getMonth() === today.getMonth() &&
+          apptDate.getFullYear() === today.getFullYear()
+        );
+      });
 
-        const todayAppts = appointmentsData.filter((appointment: any) => {
-          const appointmentDate = new Date(appointment.date);
-          appointmentDate.setHours(0, 0, 0, 0);
-          return appointmentDate.getTime() === today.getTime();
-        });
+      todayAppts.sort((a: any, b: any) => {
+        return (
+          new Date(a.appointmentDate).getTime() -
+          new Date(b.appointmentDate).getTime()
+        );
+      });
 
-        const upcomingAppts = appointmentsData
-          .filter((appointment: any) => {
-            const appointmentDate = new Date(appointment.date);
-            appointmentDate.setHours(0, 0, 0, 0);
-            return appointmentDate.getTime() > today.getTime();
-          })
-          .slice(0, 5); // Chỉ lấy 5 cuộc hẹn sắp tới
+      const mockReviews = [
+        {
+          id: "1",
+          userName: "Nguyễn Văn A",
+          date: "22/05/2025",
+          rating: 5,
+          comment:
+            "Thợ cắt tóc rất chuyên nghiệp và tận tâm. Tôi rất hài lòng với kiểu tóc mới của mình!",
+          avatar: null,
+        },
+      ];
 
-        setTodayAppointments(todayAppts);
-        setUpcomingAppointments(upcomingAppts);
-      }
+      setReviews(mockReviews);
+      setTodayAppointments(todayAppts);
+
+      setStats({
+        totalAppointments: appointments.length,
+        totalClients: new Set(
+          appointments.map((a: any) => a.userId || a.user?.id || "")
+        ).size,
+        totalRevenue: appointments.reduce((sum: number, appt: any) => {
+          const amount = parseFloat(appt.finalAmount || appt.totalAmount || 0);
+          return isNaN(amount) ? sum : sum + amount;
+        }, 0),
+      });
     } catch (error) {
-      console.error("Error fetching stylist data:", error);
+      console.error("Error fetching stylist appointments:", error);
+      setTodayAppointments([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  // Xử lý refresh
-  const onRefresh = async () => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    await fetchData();
+    fetchAppointments();
+  }, [userInfo?.id]);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchAppointments();
+    }, [userInfo?.id])
+  );
+
+  const getAppointmentColor = (index: number) => {
+    const colors = [
+      { bg: "#e6f4f1", border: "#5ebeaf", icon: "#5ebeaf" }, // xanh lá
+      { bg: "#fff0ee", border: "#ff6e61", icon: "#ff6e61" }, // đỏ nhạt
+      { bg: "#f0e6ff", border: "#af8df5", icon: "#af8df5" }, // tím
+      { bg: "#e6eeff", border: "#5e95ff", icon: "#5e95ff" }, // xanh dương
+      { bg: "#fff5e6", border: "#ffb84d", icon: "#ffb84d" }, // cam
+    ];
+    return colors[index % colors.length];
   };
 
-  useEffect(() => {
-    fetchData();
-  }, [user?.id]);
+  const renderAppointmentItem = (appointment: any, index: number) => {
+    const color = getAppointmentColor(index);
+    const appointmentTime = new Date(appointment.appointmentDate);
 
-  if (loading && !refreshing) {
-    return <Loading />;
-  }
+    return (
+      <Animated.View
+        key={appointment.id}
+        style={{
+          opacity: fadeAnim,
+          transform: [
+            {
+              translateY: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [20, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <TouchableOpacity
+          className={`flex-row bg-white rounded-xl mb-3 border border-gray-100 p-3 overflow-hidden`}
+          style={{ borderLeftWidth: 4, borderLeftColor: color.border }}
+          onPress={() =>
+            router.push({
+              pathname: "/(stylists)/appointment-details",
+              params: { id: appointment.id },
+            })
+          }
+          activeOpacity={0.7}
+        >
+          <View className="items-center w-[60px]">
+            <View
+              className={`w-8 h-8 rounded-full items-center justify-center mb-1`}
+              style={{ backgroundColor: color.bg }}
+            >
+              <Ionicons name="time-outline" size={16} color={color.icon} />
+            </View>
+            <Text className="text-sm font-semibold text-gray-600">
+              {formatTime(appointmentTime)}
+            </Text>
+          </View>
+
+          <View className="flex-1 px-3">
+            <Text
+              className="text-base font-semibold text-gray-800"
+              numberOfLines={1}
+            >
+              {appointment.userName || appointment.name || "Khách hàng"}
+            </Text>
+            <Text className="text-sm text-gray-500" numberOfLines={1}>
+              {Array.isArray(appointment.services)
+                ? appointment.services
+                    .map((s: any) => s.service?.name || s.name)
+                    .join(", ")
+                : "Dịch vụ"}
+            </Text>
+            <View className="flex-row justify-between items-center mt-2">
+              <Text className="font-bold text-primary">
+                {formatPrice(appointment.finalAmount || 0)}
+              </Text>
+              <View className="flex-row items-center">
+                <View
+                  className="w-2 h-2 rounded-full mr-1.5"
+                  style={{
+                    backgroundColor: getStatusColor(appointment.status),
+                  }}
+                />
+                <Text className="text-xs text-gray-500">
+                  {getStatusText(appointment.status)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <TouchableOpacity className="py-1 px-1 justify-center">
+            <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+          </TouchableOpacity>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  };
+
+  const getStatusColor = (status: string) => {
+    if (!status) return "#94a3b8"; // gray default
+
+    status = status.toLowerCase();
+    if (status === "completed") return "#10b981"; // green
+    if (status === "confirmed") return "#3b82f6"; // blue
+    if (status === "pending") return "#f59e0b"; // amber
+    if (status === "cancelled") return "#ef4444"; // red
+
+    return "#94a3b8"; // gray default
+  };
+
+  const getStatusText = (status: string) => {
+    if (!status) return "Chờ xác nhận";
+
+    status = status.toLowerCase();
+    if (status === "completed") return "Hoàn thành";
+    if (status === "confirmed") return "Đã xác nhận";
+    if (status === "pending") return "Chờ xác nhận";
+    if (status === "cancelled") return "Đã hủy";
+
+    return status;
+  };
+
+  const renderReviewItem = (review: any) => {
+    return (
+      <Animated.View
+        key={review.id}
+        style={{
+          opacity: fadeAnim,
+          transform: [
+            {
+              translateY: fadeAnim.interpolate({
+                inputRange: [0, 1],
+                outputRange: [20, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <View className="bg-white rounded-xl p-4 mb-3 border border-gray-100">
+          <View className="flex-row justify-between items-center mb-3">
+            <View className="flex-row items-center">
+              <Image
+                source={
+                  review.avatar
+                    ? { uri: review.avatar }
+                    : require("@/assets/images/default-avatar.png")
+                }
+                className="w-10 h-10 rounded-full mr-3"
+              />
+              <View>
+                <Text className="text-base font-semibold text-gray-800">
+                  {review.userName}
+                </Text>
+                <Text className="text-xs text-gray-500">{review.date}</Text>
+              </View>
+            </View>
+            <View className="flex-row">
+              {Array(5)
+                .fill(0)
+                .map((_, i) => (
+                  <Ionicons
+                    key={i}
+                    name={i < review.rating ? "star" : "star-outline"}
+                    size={14}
+                    color={i < review.rating ? "#FFD700" : "#cbd5e1"}
+                    className="ml-0.5"
+                  />
+                ))}
+            </View>
+          </View>
+          <Text className="text-sm text-gray-700 leading-5">
+            {review.comment}
+          </Text>
+          <TouchableOpacity className="flex-row items-center mt-3 self-start">
+            <Ionicons
+              name="chatbubble-outline"
+              size={14}
+              color={Colors.primary}
+            />
+            <Text className="text-xs font-medium text-primary ml-1">
+              Phản hồi
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
+    );
+  };
+
+  const lightenColor = (color: string, percent: number) => {
+    const num = parseInt(color.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent);
+    const R = (num >> 16) + amt;
+    const G = ((num >> 8) & 0x00ff) + amt;
+    const B = (num & 0x0000ff) + amt;
+    return (
+      "#" +
+      (
+        0x1000000 +
+        (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
+        (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
+        (B < 255 ? (B < 1 ? 0 : B) : 255)
+      )
+        .toString(16)
+        .slice(1)
+    );
+  };
 
   return (
-    <SafeAreaView
-      className="flex-1 bg-white"
-      edges={["left", "right"]}
-    >
-      <StatusBar backgroundColor="#FFFFFF" barStyle="dark-content" />
-      
+    <ScreenWrapper>
+      <StatusBar style="light" />
+
       <ScrollView
-        className="flex-1"
+        className="flex-1 bg-gray-50"
+        showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
-        showsVerticalScrollIndicator={false}
       >
-        {/* Phần header mới - giống với header của user */}
-        <View className="flex-row justify-between items-center px-6 pt-4 pb-2 mb-5">
-          <View>
-            <Text className="text-base text-gray-500 font-medium">
-              Xin chào,
-            </Text>
-            <Text className="text-2xl font-bold text-[#333]">
-              {user?.firstName || user?.fullName || "Stylist"}
-            </Text>
-          </View>
-          <TouchableOpacity
-            className="w-11 h-11 bg-white rounded-full shadow-md justify-center items-center"
-            activeOpacity={0.7}
-            onPress={() => router.push("/(stylists)/profile")}
-          >
-            <Image
-              source={
-                user?.avatar
-                  ? { uri: user.avatar }
-                  : require("../../assets/images/default-avatar.png")
-              }
-              className="w-9 h-9 rounded-full"
-            />
-          </TouchableOpacity>
-        </View>
-
-        {/* Search Bar */}
-        <TouchableOpacity
-          className="flex-row items-center bg-white rounded-2xl px-5 py-4 mx-6 mb-7 shadow-md"
-          activeOpacity={0.7}
+        {/* Hero section with gradient background */}
+        <View
+          className="pt-14 pb-8 rounded-b-[30px] bg-primary"
+          style={{
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 12,
+          }}
         >
-          <Ionicons name="search-outline" size={22} color="#A0A0A0" />
-          <Text className="ml-3 text-[#A0A0A0] text-base font-medium">
-            Tìm kiếm lịch hẹn...
-          </Text>
-        </TouchableOpacity>
-        
-        {/* Phần thống kê nhanh - UI mới */}
-        <View className="mx-6 mb-6">
-          <View className="bg-white rounded-2xl shadow-md p-4">
-            <Text className="text-lg font-bold mb-3 ml-2">Thống kê hôm nay</Text>
-            <View className="flex-row justify-between">
-              <View className="items-center flex-1">
-                <View className="w-12 h-12 rounded-full bg-blue-100 items-center justify-center mb-1">
-                  <Ionicons name="calendar-outline" size={22} color={Colors.primary} />
-                </View>
-                <Text className="text-2xl font-bold">{todayAppointments.length}</Text>
-                <Text className="text-gray-500 text-xs">Hôm nay</Text>
-              </View>
-              
-              <View className="items-center flex-1">
-                <View className="w-12 h-12 rounded-full bg-green-100 items-center justify-center mb-1">
-                  <Ionicons name="time-outline" size={22} color="#10b981" />
-                </View>
-                <Text className="text-2xl font-bold">{upcomingAppointments.length}</Text>
-                <Text className="text-gray-500 text-xs">Sắp tới</Text>
-              </View>
-              
-              <View className="items-center flex-1">
-                <View className="w-12 h-12 rounded-full bg-orange-100 items-center justify-center mb-1">
-                  <Ionicons name="checkmark-done-outline" size={22} color="#f97316" />
-                </View>
-                <Text className="text-2xl font-bold">
-                  {todayAppointments.filter((apt: any) => apt.status === "completed").length}
+          <Stack.Screen
+            options={{
+              title: "Trang chủ",
+              headerTitleStyle: {
+                fontSize: 18,
+                fontWeight: "600",
+                color: "#ffffff",
+              },
+              headerStyle: { backgroundColor: "transparent" },
+              headerTintColor: "#fff",
+              headerTransparent: true,
+            }}
+          />
+
+          <View className="px-5">
+            <View className="flex-row justify-between items-center">
+              <View>
+                <Text className="text-sm text-white/80">Xin chào,</Text>
+                <Text className="text-2xl font-bold text-white">
+                  {userInfo?.firstName} {userInfo?.lastName}
                 </Text>
-                <Text className="text-gray-500 text-xs">Hoàn thành</Text>
+                <View className="flex-row items-center bg-white/20 rounded-xl py-1 px-2 mt-2 self-start">
+                  <Ionicons name="star" size={16} color="#FFD700" />
+                  <Text className="text-white font-semibold ml-1">4.9</Text>
+                </View>
+              </View>
+
+              <View className="flex-row items-center">
+                <TouchableOpacity
+                  className="relative mr-4"
+                  onPress={() => router.push("/(stylists)/notifications")}
+                >
+                  <Ionicons
+                    name="notifications-outline"
+                    size={24}
+                    color="#ffffff"
+                  />
+                  {hasNewNotifications && (
+                    <View className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full items-center justify-center">
+                      <Text className="text-[10px] font-bold text-white">
+                        2
+                      </Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+
+                <View className="relative">
+                  <Image
+                    source={
+                      userInfo?.avatar
+                        ? { uri: userInfo.avatar }
+                        : require("@/assets/images/default-avatar.png")
+                    }
+                    className="w-14 h-14 rounded-full border-2 border-white/50"
+                  />
+                  <View className="absolute bottom-0 right-0 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-white" />
+                </View>
               </View>
             </View>
-          </View>
-        </View>
 
-        {/* Dashboard Cards - Giống hình ảnh mẫu */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statsCard}>
-            <View style={styles.statsContent}>
-              <Text style={styles.statsNumber}>{stats.bookings}</Text>
-              <Text style={styles.statsLabel}>Bookings</Text>
-            </View>
-            <View style={styles.statsIconContainer}>
-              <Ionicons name="calendar-outline" size={20} color="#6366f1" />
-            </View>
-          </View>
-
-          <View style={styles.statsCard}>
-            <View style={styles.statsContent}>
-              <Text style={styles.statsNumber}>{stats.listings}</Text>
-              <Text style={styles.statsLabel}>Listings</Text>
-            </View>
-            <View style={styles.statsIconContainer}>
-              <Ionicons name="list-outline" size={20} color="#6366f1" />
-            </View>
-          </View>
-
-          <View style={styles.statsCard}>
-            <View style={styles.statsContent}>
-              <Text style={styles.statsNumber}>{stats.reviews}</Text>
-              <Text style={styles.statsLabel}>Reviews</Text>
-            </View>
-            <View style={styles.statsIconContainer}>
-              <Ionicons name="star-outline" size={20} color="#6366f1" />
-            </View>
-          </View>
-
-          <View style={styles.statsCard}>
-            <View style={styles.statsContent}>
-              <Text style={styles.statsNumber}>${stats.earnings}k</Text>
-              <Text style={styles.statsLabel}>Earnings</Text>
-            </View>
-            <View style={styles.statsIconContainer}>
-              <Ionicons name="cash-outline" size={20} color="#6366f1" />
-            </View>
-          </View>
-        </View>
-
-        {/* Phần thống kê nhanh */}
-        <View className="flex-row justify-between bg-gray-50 rounded-xl p-4 mb-6">
-          <View className="items-center">
-            <Text className="text-gray-500">Hôm nay</Text>
-            <Text className="text-2xl font-bold">
-              {todayAppointments.length}
-            </Text>
-            <Text className="text-gray-500">Cuộc hẹn</Text>
-          </View>
-          <View style={styles.divider} />
-          <View className="items-center">
-            <Text className="text-gray-500">Sắp tới</Text>
-            <Text className="text-2xl font-bold">
-              {upcomingAppointments.length}
-            </Text>
-            <Text className="text-gray-500">Cuộc hẹn</Text>
-          </View>
-          <View style={styles.divider} />
-          <View className="items-center">
-            <Text className="text-gray-500">Hoàn thành</Text>
-            <Text className="text-2xl font-bold">
-              {
-                todayAppointments.filter(
-                  (apt: any) => apt.status === "completed"
-                ).length
-              }
-            </Text>
-            <Text className="text-gray-500">Hôm nay</Text>
-          </View>
-        </View>
-
-        {/* Các chức năng nhanh */}
-        <View className="flex-row justify-between mb-6">
-          <TouchableOpacity
-            className="bg-blue-500 rounded-xl p-4 items-center flex-1 mr-2"
-            onPress={() => router.push("/(stylists)/appointments")}
-          >
-            <Ionicons name="calendar-outline" size={24} color="white" />
-            <Text className="text-white font-semibold mt-2">Lịch hẹn</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-green-500 rounded-xl p-4 items-center flex-1 mx-2"
-            onPress={() => router.push("/(stylists)/clients")}
-          >
-            <Ionicons name="people-outline" size={24} color="white" />
-            <Text className="text-white font-semibold mt-2">Khách hàng</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            className="bg-purple-500 rounded-xl p-4 items-center flex-1 ml-2"
-            onPress={() => router.push("/(stylists)/profile")}
-          >
-            <Ionicons name="person-outline" size={24} color="white" />
-            <Text className="text-white font-semibold mt-2">Hồ sơ</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Cuộc hẹn hôm nay */}
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-xl font-bold">Cuộc hẹn hôm nay</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(stylists)/appointments")}
-            >
-              <Text className="text-blue-500">Xem tất cả</Text>
-            </TouchableOpacity>
-          </View>
-
-          {todayAppointments.length === 0 ? (
-            <View className="bg-gray-50 rounded-xl p-6 items-center justify-center">
-              <Text className="text-gray-400">
-                Không có cuộc hẹn nào hôm nay
+            <View className="flex-row items-center mt-5">
+              <Ionicons name="calendar-outline" size={18} color="#ffffff" />
+              <Text className="text-white ml-2 font-medium text-sm">
+                {format(new Date(), "EEEE, dd MMMM yyyy")}
               </Text>
             </View>
-          ) : (
-            todayAppointments.map((appointment: any, index: number) => (
-              <TouchableOpacity
-                key={appointment.id || index}
-                className="bg-gray-50 rounded-xl p-4 mb-2"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(stylists)/appointment-details",
-                    params: { id: appointment.id },
-                  })
-                }
-              >
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
-                      <Ionicons
-                        name="person-outline"
-                        size={20}
-                        color="#3b82f6"
-                      />
-                    </View>
-                    <View>
-                      <Text className="font-semibold">
-                        {appointment.clientName || "Khách hàng"}
-                      </Text>
-                      <Text className="text-gray-500 text-sm">
-                        {appointment.serviceName || "Dịch vụ"}
-                      </Text>
-                    </View>
-                  </View>
-                  <View>
-                    <Text className="font-medium text-right">
-                      {formatTime(new Date(appointment.date))}
-                    </Text>
-                    <View
-                      className={`px-2 py-1 rounded-full mt-1 ${
-                        appointment.status === "completed"
-                          ? "bg-green-100"
-                          : appointment.status === "canceled"
-                          ? "bg-red-100"
-                          : "bg-yellow-100"
-                      }`}
-                    >
-                      <Text
-                        className={`text-xs text-center ${
-                          appointment.status === "completed"
-                            ? "text-green-600"
-                            : appointment.status === "canceled"
-                            ? "text-red-600"
-                            : "text-yellow-600"
-                        }`}
-                      >
-                        {appointment.status === "completed"
-                          ? "Hoàn thành"
-                          : appointment.status === "canceled"
-                          ? "Đã hủy"
-                          : "Chờ xử lý"}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </TouchableOpacity>
-            ))
-          )}
+          </View>
         </View>
 
-        {/* Cuộc hẹn sắp tới */}
-        <View className="mb-6">
-          <View className="flex-row justify-between items-center mb-2">
-            <Text className="text-xl font-bold">Cuộc hẹn sắp tới</Text>
-            <TouchableOpacity
-              onPress={() => router.push("/(stylists)/appointments")}
-            >
-              <Text className="text-blue-500">Xem tất cả</Text>
-            </TouchableOpacity>
+        {/* Dashboard content */}
+        <View className="mt-[-20px] px-4">
+          {/* Stats cards */}
+          <View className="flex-row justify-between mb-5">
+            {/* Total Appointments */}
+            <View className="bg-white rounded-2xl p-4 items-center w-[31%] shadow-sm">
+              <View
+                className="w-14 h-14 rounded-full items-center justify-center mb-2 bg-[#3b82f6]"
+                style={{
+                  shadowColor: "#3b82f6",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="calendar-clock"
+                  size={24}
+                  color="#ffffff"
+                />
+              </View>
+              <Text className="text-base font-bold text-gray-900">
+                {stats.totalAppointments}
+              </Text>
+              <Text className="text-xs text-gray-500 mt-1">Cuộc hẹn</Text>
+            </View>
+
+            {/* Total Clients */}
+            <View className="bg-white rounded-2xl p-4 items-center w-[31%] shadow-sm">
+              <View
+                className="w-14 h-14 rounded-full items-center justify-center mb-2 bg-[#8b5cf6]"
+                style={{
+                  shadowColor: "#8b5cf6",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="account-group"
+                  size={24}
+                  color="#ffffff"
+                />
+              </View>
+              <Text className="text-base font-bold text-gray-900">
+                {stats.totalClients}
+              </Text>
+              <Text className="text-xs text-gray-500 mt-1">Khách hàng</Text>
+            </View>
+
+            {/* Total Revenue */}
+            <View className="bg-white rounded-2xl p-4 items-center w-[31%] shadow-sm">
+              <View
+                className="w-14 h-14 rounded-full items-center justify-center mb-2 bg-[#10b981]"
+                style={{
+                  shadowColor: "#10b981",
+                  shadowOffset: { width: 0, height: 2 },
+                  shadowOpacity: 0.25,
+                  shadowRadius: 3.84,
+                  elevation: 5,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="chart-areaspline"
+                  size={24}
+                  color="#ffffff"
+                />
+              </View>
+              <Text className="text-base font-bold text-gray-900">
+                {stats.totalRevenue >= 1000000
+                  ? `${(stats.totalRevenue / 1000000).toFixed(1)}tr`
+                  : formatPrice(stats.totalRevenue).replace("₫", "")}
+              </Text>
+              <Text className="text-xs text-gray-500 mt-1">Doanh thu</Text>
+            </View>
           </View>
 
-          {upcomingAppointments.length === 0 ? (
-            <View className="bg-gray-50 rounded-xl p-6 items-center justify-center">
-              <Text className="text-gray-400">Không có cuộc hẹn sắp tới</Text>
-            </View>
-          ) : (
-            upcomingAppointments.map((appointment: any, index: number) => (
+          {/* Quick actions */}
+          <View className="bg-white rounded-2xl p-4 mb-5 shadow-sm">
+            <Text className="text-lg font-bold text-gray-900">
+              Truy cập nhanh
+            </Text>
+
+            <View className="mt-4">
               <TouchableOpacity
-                key={appointment.id || index}
-                className="bg-gray-50 rounded-xl p-4 mb-2"
-                onPress={() =>
-                  router.push({
-                    pathname: "/(stylists)/appointment-details",
-                    params: { id: appointment.id },
-                  })
-                }
+                className="flex-row items-center bg-white rounded-2xl p-3 mb-3 border border-gray-100"
+                onPress={() => router.push("/(stylists)/schedule")}
+                activeOpacity={0.7}
               >
-                <View className="flex-row justify-between items-center">
-                  <View className="flex-row items-center">
-                    <View className="w-10 h-10 bg-blue-100 rounded-full items-center justify-center mr-3">
-                      <Ionicons
-                        name="person-outline"
-                        size={20}
-                        color="#3b82f6"
-                      />
-                    </View>
-                    <View>
-                      <Text className="font-semibold">
-                        {appointment.clientName || "Khách hàng"}
-                      </Text>
-                      <Text className="text-gray-500 text-sm">
-                        {appointment.serviceName || "Dịch vụ"}
-                      </Text>
-                      <Text className="text-blue-500 text-sm">
-                        {formatDate(new Date(appointment.date))}
-                      </Text>
-                    </View>
-                  </View>
-                  <View>
-                    <Text className="font-medium text-right">
-                      {formatTime(new Date(appointment.date))}
-                    </Text>
-                    <View
-                      className={`px-2 py-1 rounded-full mt-1 ${
-                        appointment.status === "completed"
-                          ? "bg-green-100"
-                          : appointment.status === "canceled"
-                          ? "bg-red-100"
-                          : "bg-yellow-100"
-                      }`}
-                    >
-                      <Text
-                        className={`text-xs text-center ${
-                          appointment.status === "completed"
-                            ? "text-green-600"
-                            : appointment.status === "canceled"
-                            ? "text-red-600"
-                            : "text-yellow-600"
-                        }`}
-                      >
-                        {appointment.status === "completed"
-                          ? "Hoàn thành"
-                          : appointment.status === "canceled"
-                          ? "Đã hủy"
-                          : "Chờ xử lý"}
-                      </Text>
-                    </View>
-                  </View>
+                <View
+                  className="w-12 h-12 rounded-full items-center justify-center mr-3 bg-[#3B82F6]"
+                  style={{
+                    shadowColor: "#3B82F6",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 3,
+                    elevation: 3,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="calendar-month-outline"
+                    size={22}
+                    color="#ffffff"
+                  />
                 </View>
+                <Text className="text-base font-medium text-gray-800">
+                  Lịch làm việc
+                </Text>
               </TouchableOpacity>
-            ))
-          )}
+
+              <TouchableOpacity
+                className="flex-row items-center bg-white rounded-2xl p-3 mb-3 border border-gray-100"
+                onPress={() => router.push("/(stylists)/clients")}
+                activeOpacity={0.7}
+              >
+                <View
+                  className="w-12 h-12 rounded-full items-center justify-center mr-3 bg-[#8B5CF6]"
+                  style={{
+                    shadowColor: "#8B5CF6",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 3,
+                    elevation: 3,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="account-group-outline"
+                    size={22}
+                    color="#ffffff"
+                  />
+                </View>
+                <Text className="text-base font-medium text-gray-800">
+                  Khách hàng
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                className="flex-row items-center bg-white rounded-2xl p-3 border border-gray-100"
+                onPress={() => router.push("/(stylists)/profile")}
+                activeOpacity={0.7}
+              >
+                <View
+                  className="w-12 h-12 rounded-full items-center justify-center mr-3 bg-[#EF4444]"
+                  style={{
+                    shadowColor: "#EF4444",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 3,
+                    elevation: 3,
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name="account-outline"
+                    size={22}
+                    color="#ffffff"
+                  />
+                </View>
+                <Text className="text-base font-medium text-gray-800">
+                  Hồ sơ
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Today's appointments */}
+          <View className="bg-white rounded-2xl p-4 mb-5 shadow-sm">
+            <View className="flex-row justify-between items-center mb-4">
+              <View className="flex-row items-center">
+                <Ionicons
+                  name="today-outline"
+                  size={22}
+                  color={Colors.primary}
+                  className="mr-2"
+                />
+                <Text className="text-lg font-bold text-gray-900">
+                  Lịch hẹn hôm nay
+                </Text>
+              </View>
+              <TouchableOpacity
+                className="flex-row items-center"
+                onPress={() => router.push("/(stylists)/schedule")}
+              >
+                <Text className="text-sm font-medium text-primary mr-1">
+                  Xem tất cả
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={Colors.primary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {loading ? (
+              <View className="items-center py-8">
+                <ActivityIndicator size="large" color={Colors.primary} />
+                <Text className="text-sm text-gray-500 mt-2">Đang tải...</Text>
+              </View>
+            ) : todayAppointments.length > 0 ? (
+              <View>
+                {todayAppointments.map((appointment, index) =>
+                  renderAppointmentItem(appointment, index)
+                )}
+              </View>
+            ) : (
+              <View className="bg-gray-50 rounded-xl py-6 items-center border border-gray-100">
+                <View className="w-16 h-16 rounded-full bg-gray-100 items-center justify-center mb-3">
+                  <Ionicons name="calendar-outline" size={34} color="#94a3b8" />
+                </View>
+                <Text className="text-base font-medium text-gray-700 mb-1">
+                  Ngày trống
+                </Text>
+                <Text className="text-sm text-gray-500 text-center px-6 mb-3">
+                  Bạn không có lịch hẹn nào trong hôm nay
+                </Text>
+                <TouchableOpacity
+                  className="flex-row items-center bg-primary/10 rounded-full px-4 py-2"
+                  activeOpacity={0.7}
+                  onPress={() => router.push("/(stylists)/schedule")}
+                >
+                  <MaterialCommunityIcons
+                    name="calendar-plus"
+                    size={16}
+                    color={Colors.primary}
+                  />
+                  <Text className="ml-1 text-sm font-medium text-primary">
+                    Xem lịch làm việc
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          </View>
+
+          {/* Customer reviews */}
+          <View className="bg-white rounded-2xl p-4 mb-5 shadow-sm">
+            <View className="flex-row justify-between items-center mb-4">
+              <View className="flex-row items-center">
+                <Ionicons
+                  name="star-outline"
+                  size={22}
+                  color={Colors.primary}
+                  className="mr-2"
+                />
+                <Text className="text-lg font-bold text-gray-900">
+                  Đánh giá của khách hàng
+                </Text>
+              </View>
+              <TouchableOpacity className="flex-row items-center">
+                <Text className="text-sm font-medium text-primary mr-1">
+                  Xem tất cả
+                </Text>
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={Colors.primary}
+                />
+              </TouchableOpacity>
+            </View>
+
+            {loading ? (
+              <View className="items-center py-8">
+                <ActivityIndicator size="large" color={Colors.primary} />
+                <Text className="text-sm text-gray-500 mt-2">Đang tải...</Text>
+              </View>
+            ) : reviews.length > 0 ? (
+              <View>{reviews.map((review) => renderReviewItem(review))}</View>
+            ) : (
+              <View className="bg-gray-50 rounded-xl py-8 items-center border border-gray-100">
+                <Ionicons name="star-outline" size={40} color="#cbd5e1" />
+                <Text className="text-sm text-gray-500 mt-2">
+                  Chưa có đánh giá nào
+                </Text>
+              </View>
+            )}
+          </View>
         </View>
+
+        {/* Bottom padding */}
+        <View className="h-8" />
       </ScrollView>
-    </SafeAreaView>
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </ScreenWrapper>
   );
 };
 
-const styles = StyleSheet.create({
-  divider: {
-    width: 1,
-    height: "80%",
-    backgroundColor: "#e5e7eb",
-  },
-  statsGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
-    marginTop: 10,
-    marginBottom: 20,
-  },
-  statsCard: {
-    width: "48%",
-    backgroundColor: "white",
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-    borderWidth: 1,
-    borderColor: "#f1f5f9",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  statsContent: {
-    flex: 1,
-  },
-  statsNumber: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#6366f1",
-    marginBottom: 4,
-  },
-  statsLabel: {
-    fontSize: 14,
-    color: "#64748b",
-  },
-  statsIconContainer: {
-    width: 36,
-    height: 36,
-    borderRadius: 8,
-    backgroundColor: "#eff6ff",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-});
-
-export default StylistHome;
+export default StylistHomeScreen;

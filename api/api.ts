@@ -54,7 +54,23 @@ class Api {
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`HTTP error ${response.status}: ${errorText}`);
-          throw new Error(`HTTP error ${response.status}: ${errorText}`);
+
+          let errorData;
+          try {
+            errorData = JSON.parse(errorText);
+          } catch (e) {
+            errorData = { message: errorText };
+          }
+
+          const error = new Error(errorData.message || errorText);
+          error.name = "ApiError";
+          (error as any).status = response.status;
+          (error as any).response = {
+            status: response.status,
+            data: errorData,
+          };
+
+          throw error;
         }
 
         try {

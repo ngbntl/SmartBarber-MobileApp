@@ -1,38 +1,42 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   FlatList,
   RefreshControl,
   ActivityIndicator,
+  Image,
+  Dimensions,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Stack, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
-// Fix date-fns imports to use compatible format
+import { useFocusEffect } from "expo-router";
 import format from "date-fns/format";
 import addDays from "date-fns/addDays";
-import isSameDay from "date-fns/isSameDay"; // Added missing isSameDay import
 import { vi } from "date-fns/locale";
 import AppointmentsApi from "@/api/appointments";
 import StylistApi from "@/api/stylist";
 import {
   formatTime,
-  formatDate,
   formatPrice,
   isToday,
   formatDateWithWeekday,
 } from "@/utils/functions";
 import { Colors } from "@/constants/Colors";
+import { RootState } from "@/store";
+import Toast from "@/components/ui/Toast";
+import { useNotification } from "@/hooks/useNotification";
+import SetDayOffModal from "@/components/modal/setDayOffModal";
 
 const appointmentsApi = new AppointmentsApi();
 const stylistApi = new StylistApi();
+const { width } = Dimensions.get("window");
 
-// Hàm isSameDay tự định nghĩa để tránh xung đột với date-fns
 const checkSameDay = (dateA: Date, dateB: Date): boolean => {
   return (
     dateA.getDate() === dateB.getDate() &&
@@ -41,75 +45,260 @@ const checkSameDay = (dateA: Date, dateB: Date): boolean => {
   );
 };
 
+interface DayOff {
+  id: string;
+  date: string;
+  reason?: string;
+}
+
 const Schedule = () => {
   const router = useRouter();
-  const { user } = useSelector((state: any) => state.auth);
+  const userInfo = useSelector((state: RootState) => state.auth.userInfo);
+  const { toast, setToast, appNotification } = useNotification();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [days, setDays] = useState<Date[]>([]);
-  const [appointments, setAppointments] = useState([]);
+  const [appointments, setAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [viewType, setViewType] = useState("day"); // 'day' or 'week'
+  const [monthText, setMonthText] = useState("");
+  const [timeSlots, setTimeSlots] = useState<string[]>([]);
 
-  // Khởi tạo 7 ngày từ hôm nay
+  const [daysOff, setDaysOff] = useState<DayOff[]>([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [dayOffReason, setDayOffReason] = useState("");
+
   useEffect(() => {
     const daysArray = [];
-    for (let i = -3; i <= 3; i++) {
+    for (let i = -7; i <= 14; i++) {
       daysArray.push(addDays(new Date(), i));
     }
     setDays(daysArray);
+    setMonthText(format(selectedDate, "MMMM yyyy", { locale: vi }));
+
+    const slots = [];
+    for (let hour = 8; hour <= 20; hour++) {
+      slots.push(`${hour.toString().padStart(2, "0")}:00`);
+      if (hour < 20) {
+        slots.push(`${hour.toString().padStart(2, "0")}:30`);
+      }
+    }
+    setTimeSlots(slots);
   }, []);
 
-  // Tải các cuộc hẹn
-  const fetchAppointments = async () => {
+  useEffect(() => {
+    setMonthText(format(selectedDate, "MMMM yyyy", { locale: vi }));
+  }, [selectedDate]);
+
+  const fetchDaysOff = useCallback(async () => {
+    if (!userInfo?.id) return;
+
     try {
-      setLoading(true);
-      if (user?.id) {
-        // Trong thực tế, bạn sẽ gọi API với tham số date
-        const response = await appointmentsApi.getAppointments(user.id);
-
-        // Lọc các cuộc hẹn theo ngày đã chọn
-        const filteredAppointments = response.filter((appointment: any) => {
-          const appointmentDate = new Date(appointment.date);
-          return checkSameDay(appointmentDate, selectedDate);
-        });
-
-        // Sắp xếp theo thời gian
-        filteredAppointments.sort((a: any, b: any) => {
-          return new Date(a.date).getTime() - new Date(b.date).getTime();
-        });
-
-        setAppointments(filteredAppointments);
+      const response = await stylistApi.getStylistDaysOff(userInfo.id);
+      if (Array.isArray(response)) {
+        setDaysOff(response);
+      } else if (response && Array.isArray(response.items)) {
+        setDaysOff(response.items);
+      } else {
+        setDaysOff([]);
       }
     } catch (error) {
+      console.error("Error fetching stylist days off:", error);
+      setDaysOff([]);
+    } finally {
+    }
+  }, [userInfo?.id]);
+
+  const fetchAppointments = useCallback(async () => {
+    if (!userInfo?.id) return;
+
+    try {
+      setLoading(true);
+      const response = await appointmentsApi.getStylistAppointments(
+        userInfo.id
+      );
+
+      const allAppointments =
+        response && response.items
+          ? response.items
+          : Array.isArray(response)
+          ? response
+          : [];
+
+      const filteredAppointments = allAppointments.filter(
+        (appointment: any) => {
+          if (!appointment.appointmentDate) return false;
+          const appointmentDate = new Date(appointment.appointmentDate);
+          return checkSameDay(appointmentDate, selectedDate);
+        }
+      );
+
+      filteredAppointments.sort((a: any, b: any) => {
+        return (
+          new Date(a.appointmentDate).getTime() -
+          new Date(b.appointmentDate).getTime()
+        );
+      });
+
+      setAppointments(filteredAppointments);
+    } catch (error) {
       console.error("Error fetching appointments:", error);
+      setAppointments([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [selectedDate, userInfo?.id]);
 
-  // Tải lại dữ liệu khi thay đổi ngày hoặc refresh
-  useEffect(() => {
-    fetchAppointments();
-  }, [selectedDate, user?.id]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchAppointments();
+      fetchDaysOff();
+    }, [fetchAppointments, fetchDaysOff])
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
     fetchAppointments();
+    fetchDaysOff();
   };
 
-  // Lấy màu sắc cho từng cuộc hẹn (để tạo sự đa dạng)
+  const isDayOff = useCallback(
+    (date: Date) => {
+      if (!daysOff || !daysOff.length) return false;
+
+      return daysOff.some((dayOff) => {
+        const dayOffDate = new Date(dayOff.date);
+        return checkSameDay(dayOffDate, date);
+      });
+    },
+    [daysOff]
+  );
+
+  const getDayOff = useCallback(
+    (date: Date): DayOff | undefined => {
+      if (!daysOff || !daysOff.length) return undefined;
+
+      return daysOff.find((dayOff) => {
+        const dayOffDate = new Date(dayOff.date);
+        return checkSameDay(dayOffDate, date);
+      });
+    },
+    [daysOff]
+  );
+
+  const addDayOff = async () => {
+    if (!userInfo?.id) return;
+
+    try {
+      setLoading(true);
+      const dateString = format(selectedDate, "yyyy-MM-dd");
+
+      const dayOffData = {
+        stylistId: userInfo.id,
+        date: dateString,
+        reason: dayOffReason || "",
+      };
+
+      const res = await stylistApi.addDayOff(dayOffData);
+
+      appNotification(res);
+
+      fetchDaysOff();
+      setModalVisible(false);
+      setDayOffReason("");
+    } catch (error: any) {
+      console.error("Error adding day off:", error);
+      appNotification(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalError = (errorMessage: string) => {
+    setToast({
+      message: errorMessage,
+      type: "error",
+    });
+  };
+
+  const removeDayOff = async () => {
+    if (!userInfo?.id) return;
+
+    const dayOff = getDayOff(selectedDate);
+    if (!dayOff) return;
+
+    try {
+      setLoading(true);
+      const response = await stylistApi.removeDayOff(dayOff.id);
+      appNotification(response);
+
+      fetchDaysOff();
+    } catch (error: any) {
+      console.error("Error removing day off:", error);
+      appNotification(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleDayOff = () => {
+    const isCurrentDateDayOff = isDayOff(selectedDate);
+
+    if (isCurrentDateDayOff) {
+      Alert.alert("Xóa ngày nghỉ", "Bạn có chắc chắn muốn xóa ngày nghỉ này?", [
+        { text: "Hủy", style: "cancel" },
+        { text: "Xóa", onPress: removeDayOff, style: "destructive" },
+      ]);
+    } else {
+      if (appointments.length > 0) {
+        Alert.alert(
+          "Cảnh báo",
+          `Bạn có ${appointments.length} cuộc hẹn vào ngày này. Bạn vẫn muốn đặt làm ngày nghỉ?`,
+          [
+            { text: "Hủy", style: "cancel" },
+            { text: "Tiếp tục", onPress: () => setModalVisible(true) },
+          ]
+        );
+      } else {
+        setModalVisible(true);
+      }
+    }
+  };
+
   const getAppointmentColor = (index: number) => {
     const colors = [
-      { bg: "#e6f4f1", border: "#5ebeaf" }, // xanh lá
-      { bg: "#fff0ee", border: "#ff6e61" }, // đỏ nhạt
-      { bg: "#f0e6ff", border: "#af8df5" }, // tím
-      { bg: "#e6eeff", border: "#5e95ff" }, // xanh dương
-      { bg: "#fff5e6", border: "#ffb84d" }, // cam
+      { bg: "#e6f4f1", border: "#5ebeaf", textColor: "#0f766e" },
+      { bg: "#fff0ee", border: "#ff6e61", textColor: "#dc2626" },
+      { bg: "#f0e6ff", border: "#af8df5", textColor: "#7c3aed" },
+      { bg: "#e6eeff", border: "#5e95ff", textColor: "#2563eb" },
+      { bg: "#fff5e6", border: "#ffb84d", textColor: "#d97706" },
     ];
     return colors[index % colors.length];
+  };
+
+  const getStatusColor = (status: string) => {
+    if (!status) return "#94a3b8";
+
+    status = status.toLowerCase();
+    if (status === "completed") return "#10b981"; // green
+    if (status === "confirmed") return "#3b82f6"; // blue
+    if (status === "pending") return "#f59e0b"; // amber
+    if (status === "cancelled") return "#ef4444"; // red
+
+    return "#94a3b8"; // gray default
+  };
+
+  const getStatusText = (status: string) => {
+    if (!status) return "Chờ xác nhận";
+
+    status = status.toLowerCase();
+    if (status === "completed") return "Hoàn thành";
+    if (status === "confirmed") return "Đã xác nhận";
+    if (status === "pending") return "Chờ xác nhận";
+    if (status === "cancelled") return "Đã hủy";
+
+    return status;
   };
 
   const renderDayItem = ({ item, index }: { item: Date; index: number }) => {
@@ -117,374 +306,333 @@ const Schedule = () => {
     const dayName = format(item, "EEE", { locale: vi });
     const isSelected = checkSameDay(item, selectedDate);
     const isCurrentDay = isToday(item);
+    const isDayOffDate = isDayOff(item);
 
     return (
       <TouchableOpacity
-        style={[
-          styles.dayItem,
-          isSelected && styles.selectedDayItem,
-          isCurrentDay && !isSelected && styles.todayItem,
-        ]}
+        className={`w-16 h-20 justify-center items-center mr-2 rounded-3xl ${
+          isSelected
+            ? "bg-primary"
+            : isCurrentDay
+            ? "bg-white border border-primary"
+            : isDayOffDate
+            ? "bg-red-100 border border-red-300"
+            : "bg-gray-100"
+        }`}
         onPress={() => setSelectedDate(item)}
       >
         <Text
-          style={[
-            styles.dayName,
-            isSelected && styles.selectedDayText,
-            isCurrentDay && !isSelected && styles.todayText,
-          ]}
+          className={`text-xs uppercase ${
+            isSelected
+              ? "text-white"
+              : isCurrentDay
+              ? "text-primary"
+              : isDayOffDate
+              ? "text-red-500"
+              : "text-gray-500"
+          }`}
         >
           {dayName}
         </Text>
         <Text
-          style={[
-            styles.dayNumber,
-            isSelected && styles.selectedDayText,
-            isCurrentDay && !isSelected && styles.todayText,
-          ]}
+          className={`text-xl font-semibold ${
+            isSelected
+              ? "text-white"
+              : isCurrentDay
+              ? "text-primary"
+              : isDayOffDate
+              ? "text-red-500"
+              : "text-gray-700"
+          }`}
         >
           {dayNumber}
         </Text>
-        {isSelected && <View style={styles.selectedIndicator} />}
+        {isSelected && (
+          <View className="w-1.5 h-1.5 bg-white rounded-full mt-1" />
+        )}
+        {isDayOffDate && !isSelected && (
+          <View className="w-1.5 h-1.5 bg-red-500 rounded-full mt-1" />
+        )}
       </TouchableOpacity>
     );
   };
 
-  // ... remaining code stays the same
-
-  const formatSelectedDate = () => {
-    if (isToday(selectedDate)) {
-      return "Hôm nay";
-    }
-
-    // Use our utility function instead of direct date-fns format
-    return formatDateWithWeekday(selectedDate);
-  };
-
-  // ... rest of the component remains unchanged
-
-  const renderAppointmentItem = ({
-    item,
-    index,
-  }: {
-    item: any;
-    index: number;
-  }) => {
+  const renderAppointmentItem = (appointment: any, index: number) => {
     const color = getAppointmentColor(index);
-    const appointmentTime = new Date(item.date);
+    const appointmentTime = new Date(appointment.appointmentDate);
+    const userAvatar = appointment.userAvatar || appointment.user?.avatar;
+    const userName =
+      appointment.userName || appointment.user?.firstName
+        ? `${appointment.user?.firstName || ""} ${
+            appointment.user?.lastName || ""
+          }`.trim()
+        : "Khách hàng";
 
     return (
       <TouchableOpacity
-        style={[
-          styles.appointmentItem,
-          { borderLeftColor: color.border, backgroundColor: color.bg },
-        ]}
+        key={appointment.id}
+        className={`flex-row rounded-xl mb-4 border border-gray-100 overflow-hidden`}
+        style={{
+          borderLeftWidth: 4,
+          borderLeftColor: color.border,
+          backgroundColor: color.bg,
+        }}
         onPress={() =>
           router.push({
             pathname: "/(stylists)/appointment-details",
-            params: { id: item.id },
+            params: { id: appointment.id },
           })
         }
+        activeOpacity={0.7}
       >
-        <View style={styles.appointmentTime}>
-          <Text style={styles.timeText}>{formatTime(appointmentTime)}</Text>
+        <View className="w-20 items-center justify-center py-3 pl-2">
+          <Text
+            className="text-base font-semibold"
+            style={{ color: color.textColor }}
+          >
+            {formatTime(appointmentTime)}
+          </Text>
         </View>
 
-        <View style={styles.appointmentContent}>
-          <Text style={styles.clientName}>
-            {item.clientName || "Khách hàng"}
-          </Text>
-          <Text style={styles.serviceName}>
-            {item.serviceName || "Dịch vụ"}
-          </Text>
-          <Text style={styles.price}>{formatPrice(item.totalAmount || 0)}</Text>
+        {/* Content column */}
+        <View className="flex-1 py-3 pr-3">
+          {/* Client info */}
+          <View className="flex-row items-center mb-2">
+            <View className="w-10 h-10 rounded-full bg-white mr-2 overflow-hidden">
+              <Image
+                source={
+                  userAvatar
+                    ? { uri: userAvatar }
+                    : require("@/assets/images/default-avatar.png")
+                }
+                className="w-full h-full"
+              />
+            </View>
+            <View className="flex-1">
+              <Text
+                className="font-semibold text-base"
+                style={{ color: color.textColor }}
+              >
+                {userName}
+              </Text>
+              <View className="flex-row items-center mt-0.5">
+                <View
+                  className="w-2 h-2 rounded-full mr-1"
+                  style={{
+                    backgroundColor: getStatusColor(appointment.status),
+                  }}
+                />
+                <Text className="text-xs text-gray-600">
+                  {getStatusText(appointment.status)}
+                </Text>
+              </View>
+            </View>
+          </View>
 
-          {item.notes && (
-            <View style={styles.notesContainer}>
-              <Text style={styles.notesLabel}>Ghi chú:</Text>
-              <Text style={styles.notesText}>{item.notes}</Text>
+          {/* Services */}
+          <View className="flex-row items-center mb-1">
+            <Ionicons name="cut-outline" size={14} color={color.textColor} />
+            <Text className="ml-1 text-sm" style={{ color: color.textColor }}>
+              {Array.isArray(appointment.services)
+                ? appointment.services
+                    .map((s: any) => s.service?.name || s.name)
+                    .join(", ")
+                : "Dịch vụ"}
+            </Text>
+          </View>
+
+          {/* Price */}
+          <View className="flex-row items-center">
+            <Ionicons name="cash-outline" size={14} color={color.textColor} />
+            <Text
+              className="ml-1 text-sm font-medium"
+              style={{ color: color.textColor }}
+            >
+              {formatPrice(appointment.finalAmount || 0)}
+            </Text>
+          </View>
+
+          {/* Notes if available */}
+          {appointment.notes && (
+            <View className="mt-2 pt-2 border-t border-gray-200">
+              <Text className="text-xs text-gray-500 mb-1">Ghi chú:</Text>
+              <Text className="text-sm text-gray-600">{appointment.notes}</Text>
             </View>
           )}
         </View>
-
-        <TouchableOpacity style={styles.moreButton}>
-          <Ionicons name="ellipsis-vertical" size={20} color="#94a3b8" />
-        </TouchableOpacity>
       </TouchableOpacity>
+    );
+  };
+
+  const renderDayView = () => {
+    if (loading && !refreshing) {
+      return (
+        <View className="flex-1 justify-center items-center">
+          <ActivityIndicator size="large" color={Colors.primary} />
+        </View>
+      );
+    }
+
+    const isCurrentDateDayOff = isDayOff(selectedDate);
+    const currentDayOff = getDayOff(selectedDate);
+
+    return (
+      <ScrollView
+        className="flex-1 px-4"
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {isCurrentDateDayOff && (
+          <View className="bg-red-100 border border-red-300 rounded-xl p-4 my-3">
+            <View className="flex-row justify-between items-center">
+              <View className="flex-row items-center">
+                <Ionicons name="calendar-outline" size={20} color="#ef4444" />
+                <Text className="ml-2 font-bold text-red-600">Ngày nghỉ</Text>
+              </View>
+              <TouchableOpacity
+                className="bg-red-50 rounded-full p-2"
+                onPress={toggleDayOff}
+              >
+                <Ionicons name="close-outline" size={18} color="#ef4444" />
+              </TouchableOpacity>
+            </View>
+            {currentDayOff?.reason && (
+              <Text className="text-red-600 mt-2">{currentDayOff.reason}</Text>
+            )}
+          </View>
+        )}
+
+        {appointments.length > 0 ? (
+          <>
+            <View className="flex-row justify-between items-center my-3">
+              <Text className="text-gray-500 text-sm">
+                {appointments.length} cuộc hẹn vào{" "}
+                {format(selectedDate, "dd/MM/yyyy")}
+              </Text>
+
+              {!isCurrentDateDayOff && (
+                <TouchableOpacity
+                  className="flex-row items-center bg-gray-100 rounded-full px-3 py-1"
+                  onPress={toggleDayOff}
+                >
+                  <Ionicons name="calendar-outline" size={16} color="#64748b" />
+                  <Text className="ml-1 text-sm text-gray-600">
+                    Đặt ngày nghỉ
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            {appointments.map((appointment, index) =>
+              renderAppointmentItem(appointment, index)
+            )}
+          </>
+        ) : (
+          <View className="flex-1 justify-center items-center py-16">
+            <Ionicons
+              name={isCurrentDateDayOff ? "bed-outline" : "calendar-outline"}
+              size={80}
+              color={isCurrentDateDayOff ? "#ef4444" : "#d1d5db"}
+            />
+            <Text className="text-gray-400 text-base mt-4 text-center px-8">
+              {isCurrentDateDayOff
+                ? "Đây là ngày nghỉ của bạn"
+                : `Không có cuộc hẹn nào vào ${format(
+                    selectedDate,
+                    "dd/MM/yyyy"
+                  )}`}
+            </Text>
+
+            {!isCurrentDateDayOff && (
+              <TouchableOpacity
+                className="flex-row items-center bg-gray-100 rounded-full px-4 py-2 mt-4"
+                onPress={toggleDayOff}
+              >
+                <Ionicons name="calendar-outline" size={18} color="#64748b" />
+                <Text className="ml-1 text-gray-600">Đặt ngày nghỉ</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {/* Bottom padding */}
+        <View className="h-8" />
+      </ScrollView>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["bottom", "left", "right"]}>
-      <Stack.Screen
-        options={{
-          headerShown: true,
-          title: "Lịch làm việc",
-          headerTitleStyle: styles.headerTitle,
-          headerShadowVisible: false,
-        }}
-      />
-
-      <View style={styles.header}>
-        <Text style={styles.dateTitle}>{formatSelectedDate()}</Text>
-
-        <View style={styles.viewToggle}>
-          <TouchableOpacity
-            style={[
-              styles.viewToggleButton,
-              viewType === "day" && styles.activeViewToggle,
-            ]}
-            onPress={() => setViewType("day")}
-          >
-            <Text
-              style={[
-                styles.viewToggleText,
-                viewType === "day" && styles.activeViewToggleText,
-              ]}
-            >
-              Ngày
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[
-              styles.viewToggleButton,
-              viewType === "week" && styles.activeViewToggle,
-            ]}
-            onPress={() => setViewType("week")}
-          >
-            <Text
-              style={[
-                styles.viewToggleText,
-                viewType === "week" && styles.activeViewToggleText,
-              ]}
-            >
-              Tuần
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={styles.calendarContainer}>
-        <FlatList
-          data={days}
-          renderItem={renderDayItem}
-          keyExtractor={(item) => item.toISOString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.daysContainer}
+    <>
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
-      </View>
-
-      {loading && !refreshing ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-        </View>
-      ) : (
-        <ScrollView
-          style={styles.appointmentsContainer}
-          refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-          }
-        >
-          {appointments.length > 0 ? (
-            appointments.map((appointment, index) => (
-              <View key={appointment.id || index}>
-                {renderAppointmentItem({ item: appointment, index })}
-              </View>
-            ))
-          ) : (
-            <View style={styles.emptyContainer}>
-              <Ionicons name="calendar-outline" size={50} color="#d1d5db" />
-              <Text style={styles.emptyText}>
-                Không có cuộc hẹn nào vào ngày này
-              </Text>
-            </View>
-          )}
-
-          {/* Khoảng cách dưới cùng */}
-          <View style={{ height: 30 }} />
-        </ScrollView>
       )}
-    </SafeAreaView>
+      <SafeAreaView
+        className="flex-1 bg-white"
+        edges={["bottom", "left", "right"]}
+      >
+        <Stack.Screen
+          options={{
+            headerShown: true,
+            title: "Lịch làm việc",
+            headerTitleStyle: { fontSize: 18, fontWeight: "600" },
+            headerShadowVisible: false,
+          }}
+        />
+
+        {/* Header with date info */}
+        <View className="flex-row justify-between items-center px-4 py-2">
+          <View>
+            <Text className="text-lg font-semibold text-gray-800 capitalize">
+              {formatSelectedDate(selectedDate)}
+            </Text>
+            <Text className="text-sm text-gray-500 capitalize">
+              {monthText}
+            </Text>
+          </View>
+        </View>
+
+        {/* Calendar days */}
+        <View className="border-b border-gray-100 py-2">
+          <FlatList
+            data={days}
+            renderItem={renderDayItem}
+            keyExtractor={(item) => item.toISOString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 16 }}
+            initialScrollOffset={width / 2}
+          />
+        </View>
+
+        {/* Main content - appointments */}
+        {renderDayView()}
+
+        {/* Modal for adding day off */}
+        <SetDayOffModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onConfirm={addDayOff}
+          loading={loading}
+          date={selectedDate}
+          reason={dayOffReason}
+          onReasonChange={setDayOffReason}
+        />
+      </SafeAreaView>
+    </>
   );
 };
 
-const styles = StyleSheet.create({
-  // ... styles remain unchanged
-  container: {
-    flex: 1,
-    backgroundColor: "white",
-  },
-  headerTitle: {
-    fontWeight: "600",
-    fontSize: 18,
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-  },
-  dateTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#334155",
-    textTransform: "capitalize",
-  },
-  viewToggle: {
-    flexDirection: "row",
-    backgroundColor: "#f1f5f9",
-    borderRadius: 20,
-    padding: 2,
-  },
-  viewToggleButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  activeViewToggle: {
-    backgroundColor: Colors.primary,
-  },
-  viewToggleText: {
-    color: "#64748b",
-    fontWeight: "500",
-  },
-  activeViewToggleText: {
-    color: "white",
-  },
-  calendarContainer: {
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f1f5f9",
-  },
-  daysContainer: {
-    paddingHorizontal: 16,
-  },
-  dayItem: {
-    width: 60,
-    height: 80,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 8,
-    borderRadius: 30,
-    backgroundColor: "#f1f5f9",
-  },
-  selectedDayItem: {
-    backgroundColor: Colors.primary,
-  },
-  todayItem: {
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    backgroundColor: "white",
-  },
-  dayName: {
-    fontSize: 14,
-    color: "#64748b",
-    textTransform: "uppercase",
-  },
-  dayNumber: {
-    fontSize: 20,
-    fontWeight: "600",
-    color: "#334155",
-  },
-  selectedDayText: {
-    color: "white",
-  },
-  todayText: {
-    color: Colors.primary,
-  },
-  selectedIndicator: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: "white",
-    marginTop: 4,
-  },
-  appointmentsContainer: {
-    flex: 1,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  appointmentItem: {
-    flexDirection: "row",
-    backgroundColor: "#f8fafc",
-    borderRadius: 12,
-    marginBottom: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: "#5ebeaf",
-    overflow: "hidden",
-  },
-  appointmentTime: {
-    width: 70,
-    paddingLeft: 12,
-    paddingTop: 12,
-  },
-  timeText: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#475569",
-  },
-  appointmentContent: {
-    flex: 1,
-    paddingVertical: 12,
-    paddingRight: 12,
-  },
-  clientName: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#1e293b",
-  },
-  serviceName: {
-    fontSize: 14,
-    color: "#64748b",
-    marginTop: 2,
-  },
-  price: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#475569",
-    marginTop: 2,
-  },
-  notesContainer: {
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.1)",
-  },
-  notesLabel: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: "#64748b",
-  },
-  notesText: {
-    fontSize: 13,
-    color: "#475569",
-    marginTop: 2,
-  },
-  moreButton: {
-    padding: 12,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingVertical: 60,
-  },
-  emptyText: {
-    marginTop: 16,
-    color: "#94a3b8",
-    fontSize: 16,
-    textAlign: "center",
-  },
-});
+const formatSelectedDate = (date: Date) => {
+  if (isToday(date)) {
+    return "Hôm nay";
+  }
+  return formatDateWithWeekday(date);
+};
 
 export default Schedule;

@@ -23,7 +23,6 @@ import Show from "@/assets/icons/Show";
 import AuthApi from "@/api/auth";
 import { SignInInterface } from "@/types/auth";
 import { useDispatch } from "react-redux";
-import { useLanguage } from "@/hooks/useLanguage";
 import { login, setUserInfo } from "@/store/authSlice";
 import { useNotification } from "@/hooks/useNotification";
 import Toast from "@/components/ui/Toast";

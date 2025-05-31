@@ -28,6 +28,14 @@ class AppointmentsApi extends Api {
       throw error;
     }
   }
+
+  async getStylistAppointments(stylistId: string) {
+    try {
+      return await this.request("get", `/stylist/${stylistId}`);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default AppointmentsApi;

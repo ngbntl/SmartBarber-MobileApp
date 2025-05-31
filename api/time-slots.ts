@@ -8,7 +8,6 @@ class TimeSlotsApi extends Api {
 
   async getTimeSlotByStylistId(stylistId: string, date: Date | string) {
     try {
-      // Format the date properly using our utility function
       const formattedDate =
         typeof date === "string" ? date : formatShortDate(date, "-");
 
