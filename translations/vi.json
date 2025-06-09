@@ -81,8 +81,8 @@
       "emptyField": "Trường này là bắt buộc"
     },
     "register": {
-      "title": "Tạo tài khoản",
-      "description": "Vui lòng nhập thông tin để tạo tài khoản",
+      "title": "Đăng ký tài khoản",
+      "description": "Vui lòng nhập thông tin để đăng ký tài khoản",
       "firstName": "Tên",
       "lastName": "Họ",
       "email": "Email",
@@ -111,12 +111,26 @@
     },
     "forgotPassword": {
       "title": "Đặt lại mật khẩu",
-      "subtitle": "Nhập địa chỉ email của bạn, chúng tôi sẽ gửi cho bạn liên kết để đặt lại mật khẩu",
+      "subtitle": "Nhập địa chỉ email của bạn, chúng tôi sẽ gửi cho bạn mã OTP để đặt lại mật khẩu",
       "emailPlaceholder": "Email",
-      "sendButton": "Gửi liên kết đặt lại",
+      "sendButton": "Gửi OTP",
       "backToLogin": "Quay lại đăng nhập",
       "success": "Liên kết đặt lại đã được gửi đến email của bạn"
     }
+  },
+  "navigation": {
+    "home": "Trang chủ",
+    "bookings": "Lịch hẹn",
+    "hairTryOn": "Thử kiểu tóc",
+    "account": "Tài khoản"
+  },
+  "appointment_status": {
+    "pending": "Chờ xác nhận",
+    "confirmed": "Đã xác nhận",
+    "completed": "Hoàn thành",
+    "cancelled": "Đã hủy",
+    "no_show": "Không đến",
+    "rescheduled": "Đã đổi lịch"
   },
   "otp": {
     "title": "Xác thực Email của bạn",

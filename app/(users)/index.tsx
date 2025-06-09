@@ -414,7 +414,9 @@ const HomeScreen = () => {
                     </View>
                     <View className="bg-primary/10 rounded-full px-3 py-1">
                       <Text className="text-xs text-primary font-medium capitalize">
-                        {appointment.status}
+                        {t(
+                          `appointment_status.${appointment.status.toLowerCase()}`
+                        )}
                       </Text>
                     </View>
                   </View>

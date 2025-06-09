@@ -16,9 +16,11 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Icon from "@/assets/icons";
 import { Colors } from "@/constants/Colors";
+import { useLanguage } from "@/hooks/useLanguage";
 
 const ForgotPassword = () => {
   const router = useRouter();
+  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -49,12 +51,12 @@ const ForgotPassword = () => {
   const handleResetPassword = () => {
     setError("");
     if (!email.trim()) {
-      setError("Please enter your email address.");
+      setError(t("auth.login.email_empty"));
       return;
     }
 
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
+      setError(t("auth.login.email_invalid"));
       return;
     }
 
@@ -98,21 +100,20 @@ const ForgotPassword = () => {
           ]}
         >
           <Image
-            source={require("@/assets/images/icon.png")}
+            source={require("@/assets/images/forgot-pass.png")}
             style={styles.image}
             resizeMode="contain"
           />
 
           <View style={styles.textContainer}>
-            <Text style={styles.title}>Forgot Password?</Text>
+            <Text style={styles.title}>{t("auth.forgotPassword.title")}</Text>
             <Text style={styles.subtitle}>
-              Don't worry! It happens. Please enter the email address associated
-              with your account.
+              {t("auth.forgotPassword.subtitle")}
             </Text>
           </View>
 
           <Input
-            placeholder="Enter your email"
+            placeholder={t("auth.forgotPassword.emailPlaceholder")}
             icon={<Icon name="mail" size={26} color="#666" />}
             keyboardType="email-address"
             onChangeText={setEmail}
@@ -125,16 +126,18 @@ const ForgotPassword = () => {
           {error ? <Text className="text-red-500 mb-3">{error}</Text> : null}
 
           <Button
-            title="Send OTP"
+            title={t("auth.forgotPassword.sendButton")}
             loading={isLoading}
             onPress={handleResetPassword}
             style={styles.button}
           />
 
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Remember your password? </Text>
+            <Text style={styles.footerText}>
+              {t("auth.login.haveAccount")}{" "}
+            </Text>
             <TouchableOpacity onPress={() => router.replace("/(auth)/login")}>
-              <Text style={styles.footerLink}>Login</Text>
+              <Text style={styles.footerLink}>{t("common.login")}</Text>
             </TouchableOpacity>
           </View>
         </Animated.View>

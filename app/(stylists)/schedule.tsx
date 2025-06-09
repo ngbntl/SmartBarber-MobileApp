@@ -32,6 +32,7 @@ import { RootState } from "@/store";
 import Toast from "@/components/ui/Toast";
 import { useNotification } from "@/hooks/useNotification";
 import SetDayOffModal from "@/components/modal/setDayOffModal";
+import { useTranslation } from "react-i18next";
 
 const appointmentsApi = new AppointmentsApi();
 const stylistApi = new StylistApi();
@@ -55,6 +56,7 @@ const Schedule = () => {
   const router = useRouter();
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
   const { toast, setToast, appNotification } = useNotification();
+  const { t } = useTranslation();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [days, setDays] = useState<Date[]>([]);
@@ -290,15 +292,10 @@ const Schedule = () => {
   };
 
   const getStatusText = (status: string) => {
-    if (!status) return "Chờ xác nhận";
+    if (!status) return t("appointment_status.pending");
 
     status = status.toLowerCase();
-    if (status === "completed") return "Hoàn thành";
-    if (status === "confirmed") return "Đã xác nhận";
-    if (status === "pending") return "Chờ xác nhận";
-    if (status === "cancelled") return "Đã hủy";
-
-    return status;
+    return t(`appointment_status.${status}`);
   };
 
   const renderDayItem = ({ item, index }: { item: Date; index: number }) => {
