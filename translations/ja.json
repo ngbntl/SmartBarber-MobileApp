@@ -118,6 +118,20 @@
       "success": "リセットリンクがメールに送信されました"
     }
   },
+  "navigation": {
+    "home": "ホーム",
+    "bookings": "予約",
+    "hairTryOn": "スタイル試着",
+    "account": "アカウント"
+  },
+  "appointment_status": {
+    "pending": "保留中",
+    "confirmed": "確認済み",
+    "completed": "完了",
+    "cancelled": "キャンセル済み",
+    "no_show": "無断キャンセル",
+    "rescheduled": "予定変更済み"
+  },
   "otp": {
     "title": "認証コード",
     "description": "メールに送信されたOTPを入力してください",

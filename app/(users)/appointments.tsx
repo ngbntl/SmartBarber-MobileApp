@@ -492,7 +492,7 @@ const AppointmentsScreen = () => {
           <TouchableOpacity className="p-1.5" onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={22} color="#000" />
           </TouchableOpacity>
-          <Text className="text-base font-bold">Hair Try-On</Text>
+          <Text className="text-base font-bold">Lịch hẹn</Text>
           <View className="w-8" />
         </View>
       </SafeAreaView>

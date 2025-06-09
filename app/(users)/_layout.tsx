@@ -5,9 +5,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useTranslation } from "react-i18next";
 
 export default function UsersTabLayout() {
   const colorScheme = useColorScheme();
+  const { t } = useTranslation();
 
   return (
     <Tabs
@@ -35,7 +37,7 @@ export default function UsersTabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Home",
+          title: t("navigation.home"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -48,7 +50,7 @@ export default function UsersTabLayout() {
       <Tabs.Screen
         name="appointments"
         options={{
-          title: "Bookings",
+          title: t("navigation.bookings"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
@@ -61,7 +63,7 @@ export default function UsersTabLayout() {
       <Tabs.Screen
         name="hairTryOn"
         options={{
-          title: "Hair Try On",
+          title: t("navigation.hairTryOn"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "camera-reverse" : "camera-reverse-outline"}
@@ -74,7 +76,7 @@ export default function UsersTabLayout() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: "Account",
+          title: t("navigation.account"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}

@@ -118,6 +118,20 @@
       "success": "Reset link sent to your email"
     }
   },
+  "navigation": {
+    "home": "Home",
+    "bookings": "Bookings",
+    "hairTryOn": "Try On",
+    "account": "Account"
+  },
+  "appointment_status": {
+    "pending": "Pending",
+    "confirmed": "Confirmed",
+    "completed": "Completed",
+    "cancelled": "Cancelled",
+    "no_show": "No Show",
+    "rescheduled": "Rescheduled"
+  },
   "otp": {
     "title": "Verification Code",
     "description": "Enter the OTP sent to your email",
