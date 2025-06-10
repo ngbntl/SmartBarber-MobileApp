@@ -29,7 +29,11 @@
     "confirm": "Confirm",
     "see_all": "See all",
     "ok": "OK",
-    "unexpected_error": "An unexpected error occurred. Please try again."
+    "unexpected_error": "An unexpected error occurred. Please try again.",
+    "something_went_wrong": "Something went wrong",
+    "error_loading_data": "Error loading data. Please try again.",
+    "go_back": "Go back",
+    "min": "min"
   },
   "time": {
     "just_now": "Just now",
@@ -162,7 +166,8 @@
     "try_on_hair_desc": "Try on different hair styles and colors using AI technology",
     "button_try_on": "Try on now",
     "new": "New",
-    "branches": "Branches"
+    "branches": "Branches",
+    "search_placeholder": "Search for services, branches..."
   },
   "onboarding": {
     "slide1": {
@@ -295,5 +300,20 @@
     "discount": "Discount",
     "final_price": "Final Price",
     "no_vouchers": "No vouchers available"
+  },
+  "service": {
+    "description": "Description",
+    "no_description": "No description available for this service.",
+    "whats_included": "What's included",
+    "additional_notes": "Additional notes",
+    "additional_notes_content": "Please arrive 5-10 minutes before your appointment time. If you need to reschedule, please let us know at least 2 hours in advance.",
+    "book_now": "Book now",
+    "duration": "Duration",
+    "haircut": "Basic haircut service",
+    "styling": "Hair styling",
+    "consultation": "Personal consultation"
+  },
+  "share": {
+    "check_service": "Check out this service:"
   }
 }

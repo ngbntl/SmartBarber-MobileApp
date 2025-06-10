@@ -12,6 +12,14 @@ class ServicesApi extends Api {
       throw error;
     }
   }
+
+  async getServiceById(id: string) {
+    try {
+      return await this.request("get", `/${id}`);
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default ServicesApi;

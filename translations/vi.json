@@ -29,7 +29,11 @@
     "confirm": "Xác nhận",
     "see_all": "Xem tất cả",
     "ok": "OK",
-    "unexpected_error": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại."
+    "unexpected_error": "Đã xảy ra lỗi không mong muốn. Vui lòng thử lại.",
+    "something_went_wrong": "Đã có lỗi xảy ra",
+    "error_loading_data": "Lỗi khi tải dữ liệu. Vui lòng thử lại.",
+    "go_back": "Quay lại",
+    "min": "phút"
   },
   "time": {
     "just_now": "Vừa xong",
@@ -161,6 +165,7 @@
     "button_try_on": "Thử ngay",
     "new": "Mới",
     "branches": "Chi nhánh",
+    "search_placeholder": "Tìm kiếm dịch vụ, chi nhánh...",
     "slide1": {
       "title": "Tạo phong cách riêng bạn",
       "description": "Khám phá các kiểu tóc phù hợp khuôn mặt và cá tính"
@@ -306,5 +311,20 @@
     "no_face_detected": "Không phát hiện khuôn mặt trong ảnh. Vui lòng sử dụng ảnh rõ nét với khuôn mặt có thể nhìn thấy được.",
     "permission_needed": "Cần cấp quyền máy ảnh và thư viện để sử dụng tính năng này.",
     "upload_image_prompt": "Bạn muốn tải lên hình ảnh bằng cách nào?"
+  },
+  "service": {
+    "description": "Mô tả",
+    "no_description": "Chưa có mô tả cho dịch vụ này.",
+    "whats_included": "Bao gồm",
+    "additional_notes": "Ghi chú thêm",
+    "additional_notes_content": "Vui lòng đến sớm 5-10 phút trước giờ hẹn. Nếu bạn cần thay đổi lịch, vui lòng thông báo cho chúng tôi ít nhất 2 giờ trước.",
+    "book_now": "Đặt lịch ngay",
+    "duration": "Thời gian",
+    "haircut": "Dịch vụ cắt tóc cơ bản",
+    "styling": "Tạo kiểu tóc",
+    "consultation": "Tư vấn cá nhân"
+  },
+  "share": {
+    "check_service": "Xem thử dịch vụ này:"
   }
 }

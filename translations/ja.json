@@ -29,7 +29,11 @@
     "confirm": "確認",
     "see_all": "すべて見る",
     "ok": "OK",
-    "unexpected_error": "予期しないエラーが発生しました。もう一度お試しください。"
+    "unexpected_error": "予期しないエラーが発生しました。もう一度お試しください。",
+    "something_went_wrong": "問題が発生しました",
+    "error_loading_data": "データの読み込み中にエラーが発生しました。もう一度お試しください。",
+    "go_back": "戻る",
+    "min": "分"
   },
   "time": {
     "just_now": "たった今",
@@ -159,7 +163,8 @@
     "try_on_hair_desc": "AI技術を使って様々な髪型や髪色を試してみましょう",
     "button_try_on": "今すぐ試す",
     "new": "新着",
-    "branches": "支店"
+    "branches": "支店",
+    "search_placeholder": "サービスや支店を検索..."
   },
   "onboarding": {
     "slide1": {
@@ -293,5 +298,20 @@
     "no_face_detected": "画像に顔が検出されませんでした。顔がはっきり見える鮮明な写真を使用してください。",
     "permission_needed": "この機能を使用するには、カメラとギャラリーのアクセス許可が必要です。",
     "upload_image_prompt": "どのように画像をアップロードしますか？"
+  },
+  "service": {
+    "description": "説明",
+    "no_description": "このサービスの説明はありません。",
+    "whats_included": "含まれるもの",
+    "additional_notes": "追加メモ",
+    "additional_notes_content": "予約時間の5〜10分前にお越しください。予定変更が必要な場合は、少なくとも2時間前にお知らせください。",
+    "book_now": "今すぐ予約",
+    "duration": "所要時間",
+    "haircut": "基本的な散髪サービス",
+    "styling": "ヘアスタイリング",
+    "consultation": "パーソナルコンサルテーション"
+  },
+  "share": {
+    "check_service": "このサービスをチェック："
   }
 }

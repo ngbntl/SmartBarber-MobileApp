@@ -86,6 +86,13 @@ export default function UsersTabLayout() {
           ),
         }}
       />
+
+      <Tabs.Screen
+        name="serviceDetail"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }
