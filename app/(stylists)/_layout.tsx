@@ -4,8 +4,13 @@ import { Platform } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
+import { useTranslation } from "react-i18next";
+import { useNotificationCount } from "@/hooks/useNotificationCount";
 
 export default function StylistLayout() {
+  const { t } = useTranslation();
+  const { unreadCount } = useNotificationCount();
+  
   return (
     <Tabs
       screenOptions={{
@@ -32,7 +37,7 @@ export default function StylistLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: "Trang chủ",
+          title: t("navigation.home"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "home" : "home-outline"}
@@ -46,7 +51,7 @@ export default function StylistLayout() {
       <Tabs.Screen
         name="schedule"
         options={{
-          title: "Lịch làm việc",
+          title: t("navigation.schedule"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "calendar" : "calendar-outline"}
@@ -60,7 +65,7 @@ export default function StylistLayout() {
       <Tabs.Screen
         name="clients"
         options={{
-          title: "Khách hàng",
+          title: t("navigation.clients"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "people" : "people-outline"}
@@ -74,7 +79,7 @@ export default function StylistLayout() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: "Hồ sơ",
+          title: t("navigation.account"),
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
               name={focused ? "person" : "person-outline"}
@@ -82,6 +87,14 @@ export default function StylistLayout() {
               color={color}
             />
           ),
+        }}
+      />
+      
+      {/* Hide this screen from the tab bar */}
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
         }}
       />
     </Tabs>

@@ -36,7 +36,9 @@ import BranchesApi from "@/api/branches";
 import { router } from "expo-router";
 import i18n from "@/lib/i18n";
 import { useNotification } from "@/hooks/useNotification";
+import { useNotificationCount } from "@/hooks/useNotificationCount";
 import Toast from "@/components/ui/Toast";
+import NotificationBadge from "@/components/ui/NotificationBadge";
 
 // Helper function to get current locale
 const getCurrentLocale = (): string => {
@@ -71,6 +73,7 @@ const HomeScreen = () => {
 
   const carouselRef = useRef(null);
   const { appNotification, toast, setToast } = useNotification();
+  const { unreadCount, refreshCount } = useNotificationCount();
 
   const user = useSelector((state: RootState) => state.auth.userInfo);
   const appointmentsApi = new AppointmentsApi();
@@ -351,9 +354,8 @@ const HomeScreen = () => {
             <TouchableOpacity
               className="w-11 h-11 bg-white rounded-full shadow-md justify-center items-center"
               activeOpacity={0.7}
-              onPress={() => router.push("/")}
             >
-              <Icon name="noti" size={24} color={Colors.primary} />
+              <NotificationBadge count={unreadCount} size={24} color={Colors.primary} />
             </TouchableOpacity>
           </View>
 

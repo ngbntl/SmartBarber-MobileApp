@@ -6,10 +6,13 @@ import { HapticTab } from "@/components/HapticTab";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useTranslation } from "react-i18next";
+import NotificationBadge from "@/components/ui/NotificationBadge";
+import { useNotificationCount } from "@/hooks/useNotificationCount";
 
 export default function UsersTabLayout() {
   const colorScheme = useColorScheme();
   const { t } = useTranslation();
+  const { unreadCount } = useNotificationCount();
 
   return (
     <Tabs
@@ -87,8 +90,15 @@ export default function UsersTabLayout() {
         }}
       />
 
+      {/* Hide these screens from the tab bar */}
       <Tabs.Screen
         name="serviceDetail"
+        options={{
+          href: null,
+        }}
+      />
+      <Tabs.Screen
+        name="notifications"
         options={{
           href: null,
         }}

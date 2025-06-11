@@ -23,15 +23,16 @@ import { formatTime, formatPrice } from "@/utils/functions";
 import { format } from "date-fns";
 import Toast from "@/components/ui/Toast";
 import { useNotification } from "@/hooks/useNotification";
+import { useNotificationCount } from "@/hooks/useNotificationCount";
 import { RootState } from "@/store";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import NotificationBadge from "@/components/ui/NotificationBadge";
 
 const StylistHomeScreen = () => {
   const router = useRouter();
   const { toast, setToast } = useNotification();
+  const { unreadCount, refreshCount } = useNotificationCount();
   const fadeAnim = useState(new Animated.Value(0))[0];
-
-  const [hasNewNotifications, setHasNewNotifications] = useState(true);
 
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
@@ -126,6 +127,7 @@ const StylistHomeScreen = () => {
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchAppointments();
+    refreshCount(); // Refresh notification count on pull-to-refresh
   }, [userInfo?.id]);
 
   useFocusEffect(
@@ -389,18 +391,7 @@ const StylistHomeScreen = () => {
                   className="relative mr-4"
                   onPress={() => router.push("/(stylists)/notifications")}
                 >
-                  <Ionicons
-                    name="notifications-outline"
-                    size={24}
-                    color="#ffffff"
-                  />
-                  {hasNewNotifications && (
-                    <View className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full items-center justify-center">
-                      <Text className="text-[10px] font-bold text-white">
-                        2
-                      </Text>
-                    </View>
-                  )}
+                  <NotificationBadge count={unreadCount} size={24} color="#ffffff" />
                 </TouchableOpacity>
 
                 <View className="relative">
