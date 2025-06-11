@@ -191,6 +191,7 @@
     "select_services": "サービスを選択",
     "service_description": "予約したいサービスを選択してください",
     "search_services": "サービスを検索",
+    "search_branch": "支店を検索",
     "no_results": "結果が見つかりません",
     "selected_services": "選択されたサービス",
     "total_price": "合計金額",
