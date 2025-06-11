@@ -194,6 +194,7 @@
     "select_services": "Select Services",
     "service_description": "Choose the service you want to book.",
     "search_services": "Search services",
+    "search_branch": "Search for branch",
     "no_results": "No results found",
     "selected_services": "Selected Services",
     "total_price": "Total Price",

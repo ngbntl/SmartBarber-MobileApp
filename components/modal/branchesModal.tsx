@@ -55,7 +55,6 @@ const BranchesModal = ({
     }
   };
 
-  // Filter branches based on search query
   const filteredBranches = branches.filter(
     (branch) =>
       branch.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -81,7 +80,7 @@ const BranchesModal = ({
         </View>
 
         <View className="px-4 py-3">
-          <View className="flex-row bg-white rounded-lg px-4 py-2.5 items-center border border-[#eee]">
+          <View className="flex-row bg-white rounded-lg px-4 py-2.5 mb-3 items-center border border-[#eee]">
             <Ionicons name="search" size={20} color="#666" />
             <TextInput
               placeholder={t("appointments.search_branch")}
@@ -113,8 +112,13 @@ const BranchesModal = ({
                 onPress={() => onSelectBranch(item)}
               >
                 <Image
-                  source={item.image || require("@/assets/images/logo.png")}
+                  source={
+                    item.image
+                      ? { uri: item.image }
+                      : require("@/assets/images/logo.png")
+                  }
                   className="w-[60px] h-[60px] rounded-lg"
+                  defaultSource={require("@/assets/images/logo.png")}
                 />
                 <View className="flex-1 ml-4">
                   <Text className="text-base font-bold mb-1">{item.name}</Text>
