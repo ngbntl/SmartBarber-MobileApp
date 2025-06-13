@@ -39,6 +39,8 @@ import { RootState } from "@/store";
 import AppointmentsApi from "@/api/appointments";
 import { useNotification } from "@/hooks/useNotification";
 import i18n from "@/lib/i18n";
+import RatingsApi from "@/api/reviews";
+import ReviewApi from "@/api/reviews";
 
 const getCurrentLocale = (): string => {
   const localeMap: Record<string, string> = {
@@ -127,6 +129,8 @@ const AppointmentsScreen = () => {
     loadingTimeSlots: false,
   });
   const { loadingStylists, loadingSchedule, loadingTimeSlots } = loadingState;
+
+  const [ratingInProgress, setRatingInProgress] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchStylists = async () => {
@@ -474,6 +478,34 @@ const AppointmentsScreen = () => {
       fetchAppointments();
     }
   }, [activeTab, fetchAppointments]);
+
+  const handleRateStylist = async (
+    appointmentId: string,
+    rating: number,
+    comment: string
+  ) => {
+    try {
+      setRatingInProgress(appointmentId);
+
+      const ratingData = {
+        appointmentId: appointmentId,
+        rating: rating,
+        comment: comment,
+      };
+
+      const reviewApi = new ReviewApi();
+      const response = await reviewApi.createReview(ratingData);
+
+      if (response) {
+        appNotification(response);
+        fetchAppointments();
+      }
+    } catch (error: any) {
+      console.error("Error submitting rating:", error);
+    } finally {
+      setRatingInProgress(null);
+    }
+  };
 
   return (
     <View className="flex-1 bg-white">
@@ -1041,6 +1073,7 @@ const AppointmentsScreen = () => {
                   appointment={item}
                   onCancel={handleCancelAppointment}
                   cancelingId={cancelingId}
+                  onRate={handleRateStylist}
                 />
               )}
               contentContainerStyle={{ paddingVertical: 16 }}

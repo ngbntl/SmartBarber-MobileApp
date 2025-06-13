@@ -1,5 +1,11 @@
-import React from "react";
-import { View, Text, TouchableOpacity } from "react-native";
+import React, { useState, useEffect } from "react";
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Modal,
+  ActivityIndicator,
+} from "react-native";
 import { router } from "expo-router";
 import { Appointment } from "../../types/appointments";
 import { Ionicons } from "@expo/vector-icons";
@@ -8,8 +14,8 @@ import useLanguage from "../../hooks/useLanguage";
 import Icon from "@/assets/icons";
 import { formatCountdown, formatPrice, formatTime } from "@/utils/functions";
 import i18n from "@/lib/i18n";
+import RatingModal from "./RatingModal"; // Import the RatingModal component
 
-// Helper function to get current locale
 const getCurrentLocale = (): string => {
   const localeMap: Record<string, string> = {
     en: "en-US",
@@ -25,6 +31,7 @@ interface AppointmentCardProps {
   compact?: boolean;
   onCancel?: (appointmentId: string) => void;
   cancelingId?: string | null;
+  onRate?: (appointmentId: string, rating: number, comment: string) => void;
 }
 
 const AppointmentCard = ({
@@ -32,9 +39,15 @@ const AppointmentCard = ({
   compact = false,
   onCancel,
   cancelingId,
+  onRate,
 }: AppointmentCardProps) => {
   const { t } = useLanguage();
   const isPending = appointment.status?.toLowerCase() === "pending";
+  const isCompleted = appointment.status?.toLowerCase() === "completed";
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [hasRated, setHasRated] = useState(false);
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [ratingError, setRatingError] = useState<string | null>(null);
 
   const navigateToDetail = () => {
     router.push({
@@ -42,6 +55,44 @@ const AppointmentCard = ({
       params: { selected: appointment.id },
     });
   };
+
+  const handleRateSubmit = async (rating: number, comment: string) => {
+    if (!onRate) return;
+
+    try {
+      setIsSubmittingRating(true);
+      setRatingError(null);
+
+      // Call the onRate function provided by the parent component
+      const result = await onRate(appointment.id, rating, comment);
+
+      // Only set hasRated to true if the rating was successful
+      setHasRated(true);
+      closeRatingModal();
+    } catch (error) {
+      console.error("Error submitting rating:", error);
+      setRatingError(t("ratings.rating_failed"));
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
+
+  const openRatingModal = () => {
+    setRatingError(null); // Reset error when opening modal
+    setShowRatingModal(true);
+  };
+
+  const closeRatingModal = () => {
+    // Only close if not in the process of submitting
+    if (!isSubmittingRating) {
+      setShowRatingModal(false);
+    }
+  };
+
+  useEffect(() => {
+    // Update hasRated state when appointment.isRated changes
+    setHasRated(!!appointment.isRated);
+  }, [appointment.isRated]);
 
   return (
     <TouchableOpacity
@@ -156,6 +207,30 @@ const AppointmentCard = ({
               : t("appointments.cancel_appointment")}
           </Text>
         </TouchableOpacity>
+      )}
+
+      {isCompleted &&
+        !hasRated && ( // Check the hasRated state
+          <TouchableOpacity
+            className="mt-3 py-2 px-4 border border-primary rounded-lg self-end"
+            onPress={openRatingModal}
+            disabled={isSubmittingRating}
+          >
+            <Text className="text-primary font-medium text-sm">
+              {t("appointments.rate_stylist")}
+            </Text>
+          </TouchableOpacity>
+        )}
+
+      {showRatingModal && (
+        <RatingModal
+          visible={showRatingModal}
+          stylistName={appointment.stylistName}
+          onClose={closeRatingModal}
+          onSubmit={handleRateSubmit}
+          errorMessage={ratingError}
+          isSubmitting={isSubmittingRating}
+        />
       )}
     </TouchableOpacity>
   );

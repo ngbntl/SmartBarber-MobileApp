@@ -31,6 +31,15 @@ class UserApi extends Api {
       throw error;
     }
   }
+
+  async getUser(userId: string) {
+    try {
+      return await this.request("GET", `/${userId}`);
+    } catch (error) {
+      console.error("Error fetching user:", error);
+      throw error;
+    }
+  }
 }
 
 export default UserApi;

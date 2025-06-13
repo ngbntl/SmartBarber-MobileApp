@@ -1,5 +1,36 @@
 import Api from "./api";
 
+// Định nghĩa kiểu dữ liệu cho Favorite Service
+interface FavoriteService {
+  id: string;
+  name: string;
+  useCount: number;
+}
+
+// Định nghĩa kiểu dữ liệu cho Customer
+interface Customer {
+  id: string;
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  email: string;
+  phoneNumber: string;
+  avatar: string;
+  serviceCount: number;
+  completedAppointments: number;
+  lastServiceDate: string;
+  totalSpent: number;
+  hasPendingAppointment: boolean;
+  hasConfirmedAppointment: boolean;
+  favoriteService: FavoriteService;
+}
+
+// Định nghĩa kiểu dữ liệu cho API Response
+interface CustomersResponse {
+  items: Customer[];
+  total: number;
+}
+
 class StylistApi extends Api {
   constructor() {
     super("stylists");
@@ -48,6 +79,14 @@ class StylistApi extends Api {
   async getReviews(stylistId: string) {
     try {
       return await this.request("get", `/reviews/${stylistId}`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getCustomers(stylistId: string): Promise<CustomersResponse> {
+    try {
+      return await this.request("get", `/${stylistId}/customers`);
     } catch (error) {
       throw error;
     }
