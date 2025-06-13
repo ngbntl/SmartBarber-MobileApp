@@ -19,6 +19,7 @@ import { useSelector } from "react-redux";
 import { Colors } from "@/constants/Colors";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import AppointmentsApi from "@/api/appointments";
+import ReviewApi from "@/api/reviews";
 import { formatTime, formatPrice } from "@/utils/functions";
 import { format } from "date-fns";
 import Toast from "@/components/ui/Toast";
@@ -89,19 +90,6 @@ const StylistHomeScreen = () => {
         );
       });
 
-      const mockReviews = [
-        {
-          id: "1",
-          userName: "Nguyễn Văn A",
-          date: "22/05/2025",
-          rating: 5,
-          comment:
-            "Thợ cắt tóc rất chuyên nghiệp và tận tâm. Tôi rất hài lòng với kiểu tóc mới của mình!",
-          avatar: null,
-        },
-      ];
-
-      setReviews(mockReviews);
       setTodayAppointments(todayAppts);
 
       setStats({
@@ -123,14 +111,40 @@ const StylistHomeScreen = () => {
     }
   };
 
+  const fetchReviews = async () => {
+    if (!userInfo?.id) return;
+
+    try {
+      setLoading(true);
+      const reviewApi = new ReviewApi();
+      const response = await reviewApi.getReviews(userInfo.id);
+
+      const reviews =
+        response && response.items
+          ? response.items
+          : Array.isArray(response)
+          ? response
+          : [];
+
+      setReviews(reviews);
+    } catch (error) {
+      console.error("Error fetching stylist reviews:", error);
+      setReviews([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     fetchAppointments();
+    fetchReviews();
   }, [userInfo?.id]);
 
   useFocusEffect(
     useCallback(() => {
       fetchAppointments();
+      fetchReviews();
     }, [userInfo?.id])
   );
 
@@ -247,6 +261,7 @@ const StylistHomeScreen = () => {
     if (status === "confirmed") return "Đã xác nhận";
     if (status === "pending") return "Chờ xác nhận";
     if (status === "cancelled") return "Đã hủy";
+    if (status === "no-show") return "Không đến";
 
     return status;
   };

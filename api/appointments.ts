@@ -36,6 +36,37 @@ class AppointmentsApi extends Api {
       throw error;
     }
   }
+
+  async stylistConfirmAppointment(appointmentId: string) {
+    try {
+      const response = await this.request("put", `/confirm/${appointmentId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Error confirming appointment:", error);
+      throw error;
+    }
+  }
+
+  async updateAppointmentStatus(appointmentId: string, status: string) {
+    try {
+      const response = await this.request("put", `/status/${appointmentId}`, {
+        status,
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error updating appointment status:", error);
+      throw error;
+    }
+  }
+
+  async markAppointmentCompleted(appointmentId: string) {
+    try {
+      return await this.updateAppointmentStatus(appointmentId, "completed");
+    } catch (error) {
+      console.error("Error marking appointment as completed:", error);
+      throw error;
+    }
+  }
 }
 
 export default AppointmentsApi;

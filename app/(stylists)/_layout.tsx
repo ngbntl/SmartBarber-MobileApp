@@ -30,6 +30,20 @@ export default function StylistLayout() {
       }}
     >
       <Tabs.Screen
+        name="appointment-details"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="client-detail"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="index"
         options={{
           title: "Trang chủ",
@@ -60,10 +74,10 @@ export default function StylistLayout() {
       <Tabs.Screen
         name="clients"
         options={{
-          title: "Khách hàng",
+          title: "Đánh giá",
           tabBarIcon: ({ color, size, focused }) => (
             <Ionicons
-              name={focused ? "people" : "people-outline"}
+              name={focused ? "star" : "star-outline"}
               size={24}
               color={color}
             />

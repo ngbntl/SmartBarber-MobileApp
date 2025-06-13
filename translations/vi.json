@@ -33,7 +33,8 @@
     "something_went_wrong": "Đã có lỗi xảy ra",
     "error_loading_data": "Lỗi khi tải dữ liệu. Vui lòng thử lại.",
     "go_back": "Quay lại",
-    "min": "phút"
+    "min": "phút",
+    "submitting": "Đang gửi..."
   },
   "time": {
     "just_now": "Vừa xong",
@@ -133,7 +134,7 @@
     "confirmed": "Đã xác nhận",
     "completed": "Hoàn thành",
     "cancelled": "Đã hủy",
-    "no_show": "Không đến",
+    "no-show": "Không đến",
     "rescheduled": "Đã đổi lịch"
   },
   "otp": {
@@ -327,5 +328,24 @@
   },
   "share": {
     "check_service": "Xem thử dịch vụ này:"
+  },
+  "ratings": {
+    "rate_experience": "Đánh giá trải nghiệm",
+    "rate_stylist": "Trải nghiệm của bạn với {{name}} thế nào?",
+    "submit_rating": "Gửi đánh giá",
+    "rating_submitted": "Cảm ơn vì phản hồi của bạn!",
+    "rating_failed": "Không thể gửi đánh giá. Vui lòng thử lại.",
+    "tap_to_rate": "Chạm vào sao để đánh giá",
+    "leave_comment": "Để lại bình luận (tùy chọn)",
+    "rating_1": "Kém",
+    "rating_2": "Trung bình",
+    "rating_3": "Tốt",
+    "rating_4": "Rất tốt",
+    "rating_5": "Xuất sắc",
+    "prompt_title": "Trải nghiệm của bạn như thế nào?",
+    "prompt_description": "Dịch vụ của bạn với {{stylist}} cho {{service}} đã hoàn thành. Hãy dành chút thời gian để đánh giá trải nghiệm của bạn.",
+    "rate_now": "Đánh giá ngay",
+    "maybe_later": "Để sau",
+    "thanks_for_rating": "Cảm ơn vì đánh giá của bạn!"
   }
 }

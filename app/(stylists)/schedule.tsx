@@ -33,6 +33,7 @@ import Toast from "@/components/ui/Toast";
 import { useNotification } from "@/hooks/useNotification";
 import SetDayOffModal from "@/components/modal/setDayOffModal";
 import { useTranslation } from "react-i18next";
+import useAppointmentStatusCheck from "@/hooks/useAppointmentStatusCheck";
 
 const appointmentsApi = new AppointmentsApi();
 const stylistApi = new StylistApi();
@@ -61,6 +62,7 @@ const Schedule = () => {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [days, setDays] = useState<Date[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [allAppointments, setAllAppointments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [monthText, setMonthText] = useState("");
@@ -120,14 +122,16 @@ const Schedule = () => {
         userInfo.id
       );
 
-      const allAppointments =
+      const receivedAppointments =
         response && response.items
           ? response.items
           : Array.isArray(response)
           ? response
           : [];
 
-      const filteredAppointments = allAppointments.filter(
+      setAllAppointments(receivedAppointments);
+
+      const filteredAppointments = receivedAppointments.filter(
         (appointment: any) => {
           if (!appointment.appointmentDate) return false;
           const appointmentDate = new Date(appointment.appointmentDate);
@@ -146,11 +150,36 @@ const Schedule = () => {
     } catch (error) {
       console.error("Error fetching appointments:", error);
       setAppointments([]);
+      setAllAppointments([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   }, [selectedDate, userInfo?.id]);
+
+  const { lastCheckTime } = useAppointmentStatusCheck(
+    allAppointments,
+    (updatedAppointments) => {
+      setAllAppointments(updatedAppointments);
+
+      const filteredAppointments = updatedAppointments.filter(
+        (appointment: any) => {
+          if (!appointment.appointmentDate) return false;
+          const appointmentDate = new Date(appointment.appointmentDate);
+          return checkSameDay(appointmentDate, selectedDate);
+        }
+      );
+
+      if (filteredAppointments.length > 0) {
+        setAppointments(filteredAppointments);
+      }
+
+      setToast({
+        message: "Một số cuộc hẹn đã được tự động cập nhật",
+        type: "info",
+      });
+    }
+  );
 
   useFocusEffect(
     useCallback(() => {

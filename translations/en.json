@@ -33,7 +33,9 @@
     "something_went_wrong": "Something went wrong",
     "error_loading_data": "Error loading data. Please try again.",
     "go_back": "Go back",
-    "min": "min"
+    "min": "min",
+    "submitting": "Submitting...",
+    "service": "service"
   },
   "time": {
     "just_now": "Just now",
@@ -129,11 +131,11 @@
     "account": "Account"
   },
   "appointment_status": {
-    "pending": "Pending",
-    "confirmed": "Confirmed",
+    "pending": "Chờ xác nhận",
+    "confirmed": "Đã xác nhận",
     "completed": "Completed",
     "cancelled": "Cancelled",
-    "no_show": "No Show",
+    "no-show": "Không đến",
     "rescheduled": "Rescheduled"
   },
   "otp": {
@@ -219,7 +221,8 @@
     "no_stylists_available": "No stylists available",
     "no_time_slots": "No available time slots",
     "booking_failed": "Booking failed",
-    "complete_all_steps": "Please complete all steps"
+    "complete_all_steps": "Please complete all steps",
+    "rate_stylist": "Rate Stylist"
   },
   "hair_try_on": {
     "title": "Try on Hair Styles",
@@ -316,5 +319,24 @@
   },
   "share": {
     "check_service": "Check out this service:"
+  },
+  "ratings": {
+    "rate_experience": "Rate Your Experience",
+    "rate_stylist": "How was your experience with {{name}}?",
+    "submit_rating": "Submit Rating",
+    "rating_submitted": "Thank you for your feedback!",
+    "rating_failed": "Failed to submit rating. Please try again.",
+    "tap_to_rate": "Tap a star to rate",
+    "leave_comment": "Leave a comment (optional)",
+    "rating_1": "Poor",
+    "rating_2": "Fair",
+    "rating_3": "Good",
+    "rating_4": "Very Good",
+    "rating_5": "Excellent",
+    "prompt_title": "How was your experience?",
+    "prompt_description": "Your service with {{stylist}} for {{service}} is completed. Please take a moment to rate your experience.",
+    "rate_now": "Rate Now",
+    "maybe_later": "Maybe Later",
+    "thanks_for_rating": "Thanks for your feedback!"
   }
 }
