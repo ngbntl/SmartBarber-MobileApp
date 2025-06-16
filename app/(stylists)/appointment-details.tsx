@@ -7,6 +7,8 @@ import {
   ActivityIndicator,
   Image,
   Alert,
+  Modal,
+  TextInput,
 } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -39,6 +41,8 @@ const AppointmentDetails = () => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [completeLoading, setCompleteLoading] = useState(false);
   const [noShowLoading, setNoShowLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [note, setNote] = useState("");
 
   useEffect(() => {
     fetchAppointmentDetails();
@@ -207,6 +211,31 @@ const AppointmentDetails = () => {
     return t(`appointment_status.${status}`);
   };
 
+  const handleAddNote = async () => {
+    if (!appointment?.id || !note.trim()) return;
+
+    try {
+      setLoading(true);
+      const response = await appointmentsApi.addAppointmentNote(
+        appointment.id,
+        {
+          note: note.trim(),
+        }
+      );
+
+      appNotification(response);
+      setModalVisible(false);
+      setNote("");
+
+      await fetchAppointmentDetails();
+    } catch (error) {
+      console.error("Error adding note to appointment:", error);
+      appNotification(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (loading) {
     return (
       <SafeAreaView className="flex-1 bg-white">
@@ -308,33 +337,6 @@ const AppointmentDetails = () => {
             >
               {getStatusText(appointment.status)}
             </Text>
-          </View>
-        </View>
-
-        {/* Customer info */}
-        <View className="bg-gray-50 rounded-xl p-4 mx-4 mb-4">
-          <Text className="text-sm text-gray-500 mb-3">
-            Thông tin khách hàng
-          </Text>
-          <View className="flex-row items-center">
-            <View className="w-14 h-14 rounded-full bg-white mr-3 overflow-hidden">
-              <Image
-                source={
-                  userAvatar
-                    ? { uri: userAvatar }
-                    : require("@/assets/images/default-avatar.png")
-                }
-                className="w-full h-full"
-              />
-            </View>
-            <View className="flex-1">
-              <Text className="font-semibold text-lg">{userName}</Text>
-              {appointment.user?.phoneNumber && (
-                <Text className="text-gray-500 mt-1">
-                  {appointment.user.phoneNumber}
-                </Text>
-              )}
-            </View>
           </View>
         </View>
 
@@ -476,8 +478,66 @@ const AppointmentDetails = () => {
           </View>
         )}
 
+        {/* Add Note Section */}
+        <View className="mx-4 mb-8">
+          <TouchableOpacity
+            onPress={() => setModalVisible(true)}
+            className="flex-row items-center p-4 bg-blue-600 rounded-xl shadow-sm"
+            activeOpacity={0.8}
+          >
+            <Ionicons name="add" size={22} color="white" className="mr-3" />
+            <Text className="text-white font-semibold text-base">
+              Thêm ghi chú
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <View className="h-8" />
       </ScrollView>
+
+      {/* Note Modal */}
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
+          <View className="w-full max-w-md bg-white rounded-xl p-6">
+            <Text className="text-lg font-semibold mb-4">
+              Thêm ghi chú cho cuộc hẹn
+            </Text>
+
+            <TextInput
+              multiline
+              value={note}
+              onChangeText={setNote}
+              placeholder="Nhập ghi chú ở đây..."
+              className="border rounded-lg p-3 text-base h-24"
+              placeholderTextColor="#94a3b8"
+            />
+
+            <View className="flex-row justify-end mt-4">
+              <TouchableOpacity
+                onPress={() => setModalVisible(false)}
+                className="px-4 py-2 rounded-lg bg-gray-200 mr-2"
+              >
+                <Text className="text-gray-700">Hủy</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleAddNote}
+                className="px-4 py-2 rounded-lg bg-blue-600"
+                disabled={loading}
+              >
+                <Text className="text-white font-semibold">
+                  {loading ? "Đang lưu..." : "Lưu ghi chú"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };

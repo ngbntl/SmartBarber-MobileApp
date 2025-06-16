@@ -317,16 +317,6 @@ const StylistHomeScreen = () => {
           <Text className="text-sm text-gray-700 leading-5">
             {review.comment}
           </Text>
-          <TouchableOpacity className="flex-row items-center mt-3 self-start">
-            <Ionicons
-              name="chatbubble-outline"
-              size={14}
-              color={Colors.primary}
-            />
-            <Text className="text-xs font-medium text-primary ml-1">
-              Phản hồi
-            </Text>
-          </TouchableOpacity>
         </View>
       </Animated.View>
     );
@@ -352,11 +342,27 @@ const StylistHomeScreen = () => {
   };
 
   return (
-    <ScreenWrapper>
-      <StatusBar style="light" />
+    <View style={{ flex: 1, backgroundColor: Colors.primary }}>
+      <StatusBar style="light" backgroundColor={Colors.primary} />
+
+      <Stack.Screen
+        options={{
+          title: "Trang chủ",
+          headerTitleStyle: {
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#ffffff",
+          },
+          headerStyle: {
+            backgroundColor: Colors.primary,
+          },
+          headerTintColor: "#fff",
+          headerShadowVisible: false,
+        }}
+      />
 
       <ScrollView
-        className="flex-1 bg-gray-50"
+        className="flex-1"
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -364,29 +370,15 @@ const StylistHomeScreen = () => {
       >
         {/* Hero section with gradient background */}
         <View
-          className="pt-14 pb-8 rounded-b-[30px] bg-primary"
+          className="pt-10 pb-10 rounded-b-[30px]"
           style={{
+            backgroundColor: Colors.primary,
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 4 },
             shadowOpacity: 0.15,
-            shadowRadius: 12,
           }}
         >
-          <Stack.Screen
-            options={{
-              title: "Trang chủ",
-              headerTitleStyle: {
-                fontSize: 18,
-                fontWeight: "600",
-                color: "#ffffff",
-              },
-              headerStyle: { backgroundColor: "transparent" },
-              headerTintColor: "#fff",
-              headerTransparent: true,
-            }}
-          />
-
-          <View className="px-5">
+          <View className="px-5 mt-6">
             <View className="flex-row justify-between items-center">
               <View>
                 <Text className="text-sm text-white/80">Xin chào,</Text>
@@ -442,7 +434,7 @@ const StylistHomeScreen = () => {
         </View>
 
         {/* Dashboard content */}
-        <View className="mt-[-20px] px-4">
+        <View className="mt-[-20px] px-4 bg-gray-50 rounded-t-[30px] pt-6 pb-8 shadow-lg">
           {/* Stats cards */}
           <View className="flex-row justify-between mb-5">
             {/* Total Appointments */}
@@ -731,7 +723,7 @@ const StylistHomeScreen = () => {
           onClose={() => setToast(null)}
         />
       )}
-    </ScreenWrapper>
+    </View>
   );
 };
 

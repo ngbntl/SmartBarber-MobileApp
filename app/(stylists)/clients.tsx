@@ -169,8 +169,11 @@ const ReviewsScreen = () => {
                 {item.userName}
               </Text>
               <Text className="text-xs text-gray-500">
-                {item.createdAt 
-                  ? format(new Date(Number(item.createdAt) || item.createdAt), "dd/MM/yyyy")
+                {item.createdAt
+                  ? format(
+                      new Date(Number(item.createdAt) || item.createdAt),
+                      "dd/MM/yyyy"
+                    )
                   : item.date && !isNaN(new Date(item.date).getTime())
                   ? format(new Date(item.date), "dd/MM/yyyy")
                   : "Không rõ ngày"}
@@ -275,7 +278,7 @@ const ReviewsScreen = () => {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: "Đánh giá từ khách hàng",
+          title: "Đánh giá",
           headerTitleStyle: {
             fontSize: 18,
             fontWeight: "600",
@@ -289,9 +292,9 @@ const ReviewsScreen = () => {
       />
       <StatusBar style="dark" />
 
-      <View className="flex-1 bg-gray-50 px-4">
+      <View className="flex-1 px-4 pt-0">
         {/* Search Bar */}
-        <View className="mb-4 mt-2">
+        <View className="mb-4 mt-[-24px]">
           <View className="flex-row items-center bg-white rounded-xl px-4 py-2 border border-gray-100">
             <Ionicons name="search" size={20} color="#9ca3af" />
             <TextInput

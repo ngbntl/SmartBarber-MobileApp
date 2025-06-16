@@ -11,6 +11,9 @@ import {
   StyleSheet,
   Dimensions,
   Animated,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
 } from "react-native";
 import { Portal } from "@gorhom/portal";
 import { Ionicons } from "@expo/vector-icons";
@@ -127,105 +130,134 @@ const RatingModal = ({
         />
       </TouchableWithoutFeedback>
 
-      <View style={styles.modalContainer}>
-        <TouchableWithoutFeedback>
-          <Animated.View
-            style={[
-              styles.modalContent,
-              {
-                opacity: opacity,
-                transform: [{ scale: scale }],
-              },
-            ]}
-          >
-            <View style={styles.header}>
-              <Text style={styles.title}>{t("ratings.rate_experience")}</Text>
-              {!isSubmitting && (
-                <TouchableOpacity
-                  onPress={handleClose}
-                  hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
-                >
-                  <Ionicons name="close" size={24} color="#333" />
-                </TouchableOpacity>
-              )}
-            </View>
-
-            <Text style={styles.subtitle}>
-              {t("ratings.rate_stylist", { name: stylistName })}
-            </Text>
-
-            {/* Rating Stars */}
-            <View style={styles.starsContainer}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <TouchableOpacity
-                  key={star}
-                  onPress={() => !isSubmitting && setRating(star)}
-                  style={styles.starButton}
-                  activeOpacity={0.7}
-                  disabled={isSubmitting}
-                >
-                  <Ionicons
-                    name={rating >= star ? "star" : "star-outline"}
-                    size={36}
-                    color={rating >= star ? "#FFD700" : "#CCCCCC"}
-                  />
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.ratingText}>
-              {rating > 0
-                ? t(`ratings.rating_${rating}`)
-                : t("ratings.tap_to_rate")}
-            </Text>
-
-            {/* Comment Input */}
-            <TextInput
-              style={[styles.commentInput, isSubmitting && { opacity: 0.7 }]}
-              placeholder={t("ratings.leave_comment")}
-              placeholderTextColor="#999"
-              value={comment}
-              onChangeText={(text) => !isSubmitting && setComment(text)}
-              multiline={true}
-              numberOfLines={4}
-              editable={!isSubmitting}
-              textAlignVertical="top"
-            />
-
-            {/* Error message */}
-            {errorMessage && (
-              <View style={styles.errorContainer}>
-                <Ionicons name="alert-circle" size={16} color="#ef4444" />
-                <Text style={styles.errorText}>{errorMessage}</Text>
-              </View>
-            )}
-
-            {/* Submit Button */}
-            <TouchableOpacity
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        style={styles.keyboardAvoidingContainer}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
+      >
+        <View style={styles.modalContainer}>
+          <TouchableWithoutFeedback>
+            <Animated.View
               style={[
-                styles.submitButton,
-                (rating === 0 || isSubmitting) && { opacity: 0.7 },
+                styles.modalContent,
+                {
+                  opacity: opacity,
+                  transform: [{ scale: scale }],
+                },
               ]}
-              onPress={handleSubmit}
-              disabled={rating === 0 || isSubmitting}
-              activeOpacity={0.7}
             >
-              {isSubmitting ? (
-                <View style={styles.loadingContainer}>
-                  <ActivityIndicator color="#fff" size="small" />
-                  <Text style={styles.buttonText}>
-                    {t("common.submitting")}
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContainer}
+                keyboardShouldPersistTaps="handled"
+              >
+                <View style={styles.header}>
+                  <Text style={styles.title}>
+                    {t("ratings.rate_experience")}
                   </Text>
+                  {!isSubmitting && (
+                    <TouchableOpacity
+                      onPress={handleClose}
+                      hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+                    >
+                      <Ionicons name="close" size={24} color="#333" />
+                    </TouchableOpacity>
+                  )}
                 </View>
-              ) : (
-                <Text style={styles.buttonText}>
-                  {t("ratings.submit_rating")}
+
+                <Text style={styles.subtitle}>
+                  {t("ratings.rate_stylist", { name: stylistName })}
                 </Text>
-              )}
-            </TouchableOpacity>
-          </Animated.View>
-        </TouchableWithoutFeedback>
-      </View>
+
+                {/* Rating Stars */}
+                <View style={styles.starsContainer}>
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <TouchableOpacity
+                      key={star}
+                      onPress={() => !isSubmitting && setRating(star)}
+                      style={styles.starButton}
+                      activeOpacity={0.7}
+                      disabled={isSubmitting}
+                    >
+                      <Ionicons
+                        name={rating >= star ? "star" : "star-outline"}
+                        size={36}
+                        color={rating >= star ? "#FFD700" : "#CCCCCC"}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <Text style={styles.ratingText}>
+                  {rating > 0
+                    ? t(`ratings.rating_${rating}`)
+                    : t("ratings.tap_to_rate")}
+                </Text>
+
+                {/* Comment Input */}
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={[
+                      styles.commentInput,
+                      isSubmitting && { opacity: 0.7 },
+                    ]}
+                    placeholder={t("ratings.leave_comment")}
+                    placeholderTextColor="#999"
+                    value={comment}
+                    onChangeText={(text) => !isSubmitting && setComment(text)}
+                    multiline={true}
+                    numberOfLines={4}
+                    editable={!isSubmitting}
+                    textAlignVertical="top"
+                  />
+                  <TouchableOpacity
+                    style={styles.keyboardDismissButton}
+                    onPress={() => Keyboard.dismiss()}
+                  >
+                    <Ionicons
+                      name="checkmark-done"
+                      size={20}
+                      color={Colors.primary}
+                    />
+                  </TouchableOpacity>
+                </View>
+
+                {/* Error message */}
+                {errorMessage && (
+                  <View style={styles.errorContainer}>
+                    <Ionicons name="alert-circle" size={16} color="#ef4444" />
+                    <Text style={styles.errorText}>{errorMessage}</Text>
+                  </View>
+                )}
+
+                {/* Submit Button */}
+                <TouchableOpacity
+                  style={[
+                    styles.submitButton,
+                    (rating === 0 || isSubmitting) && { opacity: 0.7 },
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={rating === 0 || isSubmitting}
+                  activeOpacity={0.7}
+                >
+                  {isSubmitting ? (
+                    <View style={styles.loadingContainer}>
+                      <ActivityIndicator color="#fff" size="small" />
+                      <Text style={styles.buttonText}>
+                        {t("common.submitting")}
+                      </Text>
+                    </View>
+                  ) : (
+                    <Text style={styles.buttonText}>
+                      {t("ratings.submit_rating")}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </ScrollView>
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        </View>
+      </KeyboardAvoidingView>
     </Portal>
   );
 };
@@ -236,15 +268,21 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
     zIndex: 1000,
   },
-  modalContainer: {
+  keyboardAvoidingContainer: {
     position: "absolute",
-    top: 0,
     left: 0,
     right: 0,
+    top: 0,
     bottom: 0,
+    zIndex: 1001,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContainer: {
     justifyContent: "center",
     alignItems: "center",
     zIndex: 1001,
+    width: "100%",
   },
   modalContent: {
     backgroundColor: "white",
@@ -258,6 +296,9 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 24,
+  },
+  scrollContainer: {
+    flexGrow: 1,
   },
   header: {
     flexDirection: "row",
@@ -291,6 +332,10 @@ const styles = StyleSheet.create({
     color: "#666",
     marginBottom: 20,
   },
+  inputContainer: {
+    position: "relative",
+    marginBottom: 20,
+  },
   commentInput: {
     borderWidth: 1,
     borderColor: "#DDD",
@@ -298,8 +343,19 @@ const styles = StyleSheet.create({
     padding: 12,
     height: 100,
     textAlignVertical: "top",
-    marginBottom: 20,
     fontSize: 16,
+    paddingRight: 40,
+  },
+  keyboardDismissButton: {
+    position: "absolute",
+    right: 10,
+    bottom: 10,
+    width: 30,
+    height: 30,
+    backgroundColor: "rgba(255,255,255,0.8)",
+    borderRadius: 15,
+    justifyContent: "center",
+    alignItems: "center",
   },
   errorContainer: {
     flexDirection: "row",

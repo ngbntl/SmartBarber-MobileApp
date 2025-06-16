@@ -39,7 +39,7 @@ const useRatingPrompt = () => {
       const pendingRatings = appointments.filter(
         (appointment) =>
           appointment.status?.toLowerCase() === "completed" &&
-          !appointment.isRated
+          !appointment.isReviewed
       );
 
       setPendingRatingAppointments(pendingRatings);
