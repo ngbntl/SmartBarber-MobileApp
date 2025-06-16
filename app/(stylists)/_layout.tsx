@@ -14,7 +14,6 @@ export default function StylistLayout() {
         tabBarButton: HapticTab,
         tabBarStyle: Platform.select({
           ios: {
-            backgroundColor: "#FFFFFF",
             elevation: 0,
             shadowOpacity: 0.1,
             height: 70,

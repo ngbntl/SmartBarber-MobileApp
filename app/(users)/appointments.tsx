@@ -16,6 +16,7 @@ import { StatusBar } from "expo-status-bar";
 
 import BranchesModal from "../../components/modal/branchesModal";
 import ServicesModal from "../../components/modal/servicesModal";
+import BookingConfirmationModal from "../../components/modal/bookingConfirmationModal";
 import AppointmentCard from "@/components/ui/AppointmentCard";
 import Toast from "@/components/ui/Toast";
 
@@ -54,12 +55,15 @@ const getCurrentLocale = (): string => {
 
 interface Voucher {
   id: string;
+  name: string;
   code: string;
   description: string;
   discountAmount: number;
-  discountType: "fixed" | "percentage";
-  minOrderAmount: number;
-  expiryDate: string;
+  discountPercent: number;
+  isPercentage: boolean;
+  minimumPurchaseAmount: number;
+  isActive: boolean;
+  endDate: string;
 }
 
 interface AppointmentState {
@@ -113,9 +117,14 @@ const AppointmentsScreen = () => {
     branchModalVisible: false,
     serviceModalVisible: false,
     datetimeModalVisible: false,
+    confirmationModalVisible: false,
   });
-  const { branchModalVisible, serviceModalVisible, datetimeModalVisible } =
-    modalState;
+  const {
+    branchModalVisible,
+    serviceModalVisible,
+    datetimeModalVisible,
+    confirmationModalVisible,
+  } = modalState;
   const user = useSelector((state: RootState) => state.auth.userInfo);
   const stylistApi = new StylistApi();
   const timeSlotsApi = new TimeSlotsApi();
@@ -131,6 +140,7 @@ const AppointmentsScreen = () => {
   const { loadingStylists, loadingSchedule, loadingTimeSlots } = loadingState;
 
   const [ratingInProgress, setRatingInProgress] = useState<string | null>(null);
+  const [isBookingLoading, setIsBookingLoading] = useState(false);
 
   useEffect(() => {
     const fetchStylists = async () => {
@@ -308,54 +318,69 @@ const AppointmentsScreen = () => {
     }
   };
 
-  const handleBooking = async () => {
+  const handleBooking = () => {
+    if (
+      selectedBranch &&
+      selectedServices.length > 0 &&
+      selectedDateTime &&
+      selectedStylist
+    ) {
+      setModalState((prevState) => ({
+        ...prevState,
+        confirmationModalVisible: true,
+      }));
+    } else {
+      alert(t("appointments.complete_all_steps"));
+    }
+  };
+
+  const confirmBooking = async () => {
     try {
-      if (
-        selectedBranch &&
-        selectedServices.length > 0 &&
-        selectedDateTime &&
-        selectedStylist
-      ) {
-        let formattedStartTime = "";
-        if (selectedTimeSlot) {
-          const [hours, minutes] = selectedTimeSlot.split("h");
-          const paddedHours = hours.padStart(2, "0");
-          const paddedMinutes = (minutes || "00").padStart(2, "0");
-          formattedStartTime = `${paddedHours}:${paddedMinutes}`;
-        }
+      setIsBookingLoading(true);
 
-        const appointmentData = {
-          userId: user?.id,
-          branchId: selectedBranch.id,
-          serviceIds: selectedServices.map((service) => service.id),
-          stylistId: selectedStylist.id,
-          appointmentDate: selectedDateTime.toISOString(),
-          startTime: formattedStartTime,
-          totalAmount: getTotalPrice(),
-          discountAmount: calculateDiscountAmount(),
-          promotionId: selectedVoucher?.id || null,
-          notes: "",
-        };
+      let formattedStartTime = "";
+      if (selectedTimeSlot) {
+        const [hours, minutes] = selectedTimeSlot.split("h");
+        const paddedHours = hours.padStart(2, "0");
+        const paddedMinutes = (minutes || "00").padStart(2, "0");
+        formattedStartTime = `${paddedHours}:${paddedMinutes}`;
+      }
 
-        const appointmentApi = new AppointmentsApi();
+      const appointmentData = {
+        userId: user?.id,
+        branchId: selectedBranch?.id,
+        serviceIds: selectedServices.map((service) => service.id),
+        stylistId: selectedStylist?.id,
+        appointmentDate: selectedDateTime?.toISOString(),
+        startTime: formattedStartTime,
+        totalAmount: getTotalPrice(),
+        discountAmount: calculateDiscountAmount(),
+        promotionId: selectedVoucher?.id || null,
+        notes: "",
+      };
 
-        const res = await appointmentApi.createAppointment(appointmentData);
-        if (res) {
-          appNotification(res);
-          resetBookingForm();
+      const appointmentApi = new AppointmentsApi();
 
-          setTimeout(() => {
-            router.push("/(users)");
-          }, 1500);
-        } else {
-          alert(t("appointments.booking_failed"));
-        }
+      const res = await appointmentApi.createAppointment(appointmentData);
+      if (res) {
+        setModalState((prevState) => ({
+          ...prevState,
+          confirmationModalVisible: false,
+        }));
+        appNotification(res);
+        resetBookingForm();
+
+        setTimeout(() => {
+          router.push("/(users)");
+        }, 1500);
       } else {
-        alert(t("appointments.complete_all_steps"));
+        alert(t("appointments.booking_failed"));
       }
     } catch (error) {
       console.error("Booking error:", error);
       alert(t("appointments.booking_failed"));
+    } finally {
+      setIsBookingLoading(false);
     }
   };
 
@@ -393,10 +418,10 @@ const AppointmentsScreen = () => {
 
     const subtotal = getSubtotalPrice();
 
-    if (selectedVoucher.discountType === "fixed") {
+    if (selectedVoucher.isPercentage === false) {
       return selectedVoucher.discountAmount;
     } else {
-      return Math.round(subtotal * (selectedVoucher.discountAmount / 100));
+      return Math.round(subtotal * (selectedVoucher.discountPercent / 100));
     }
   };
 
@@ -711,7 +736,7 @@ const AppointmentsScreen = () => {
                                 color="green"
                               />
                               <Text className="text-sm text-green-700 font-medium ml-1">
-                                {selectedVoucher.code}
+                                {selectedVoucher.name}
                               </Text>
                               <Text className="text-xs text-green-600 ml-2">
                                 {selectedVoucher.description}
@@ -839,8 +864,8 @@ const AppointmentsScreen = () => {
                                 <View className="w-full">
                                   <Image
                                     source={
-                                      stylist.image
-                                        ? { uri: stylist.image }
+                                      stylist.avatar
+                                        ? { uri: stylist.avatar }
                                         : require("@/assets/images/default-avatar.png")
                                     }
                                     className="w-full h-[120px]"
@@ -1137,6 +1162,27 @@ const AppointmentsScreen = () => {
         onSelectServices={handleServiceSelect}
         selectedBranch={selectedBranch?.id}
         selectedServices={selectedServices}
+      />
+
+      <BookingConfirmationModal
+        visible={confirmationModalVisible}
+        onClose={() =>
+          setModalState((prevState) => ({
+            ...prevState,
+            confirmationModalVisible: false,
+          }))
+        }
+        onConfirm={confirmBooking}
+        isLoading={isBookingLoading}
+        appointmentData={{
+          branch: selectedBranch,
+          services: selectedServices,
+          dateTime: selectedDateTime,
+          stylist: selectedStylist,
+          totalPrice: getTotalPrice(),
+          discountAmount: calculateDiscountAmount(),
+          voucher: selectedVoucher,
+        }}
       />
     </View>
   );

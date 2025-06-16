@@ -31,7 +31,7 @@ const Input = ({
       <TextInput
         className={`
         text-base rounded-lg flex-1
-        ${Platform.OS === "ios" ? "py-3" : "py-2"} 
+        
         ${Platform.OS === "android" ? "h-12" : "h-11"}
       `}
         placeholderTextColor={Colors.primary}

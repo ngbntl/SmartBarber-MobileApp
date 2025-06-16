@@ -218,7 +218,28 @@
     "cancel_confirmation": "この予約をキャンセルしてもよろしいですか？",
     "cancel_success": "予約のキャンセルが完了しました",
     "cancel_failed": "予約のキャンセルに失敗しました",
-    "no_services": "サービスが選択されていません"
+    "no_services": "サービスが選択されていません",
+    "appointment_success": {
+      "title": "予約成功！",
+      "subtitle": "予約が正常に完了しました。",
+      "booking_number": "予約番号",
+      "date_time": "日時",
+      "stylist": "スタイリスト",
+      "branch": "支店",
+      "services": "サービス",
+      "total_price": "合計金額",
+      "thank_you": "Smart Barberをご利用いただきありがとうございます",
+      "view_appointment": "予約を表示",
+      "back_to_home": "ホームに戻る",
+      "important_notes": "重要なお知らせ",
+      "notes": [
+        "予約時間の5〜10分前にお越しください。",
+        "キャンセルまたは変更が必要な場合は、少なくとも2時間前にお知らせください。",
+        "予約前にリマインダー通知をお送りします。"
+      ],
+      "save_to_calendar": "カレンダーに保存",
+      "share_appointment": "予約を共有"
+    }
   },
   "settings": {
     "title": "設定",

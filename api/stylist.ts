@@ -31,6 +31,17 @@ interface CustomersResponse {
   total: number;
 }
 
+export interface StylistUpdateData {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  specialization?: string;
+  experienceYears?: number;
+  isActive?: boolean;
+  phoneNumber?: string;
+  branchId?: string;
+}
+
 class StylistApi extends Api {
   constructor() {
     super("stylists");
@@ -87,6 +98,14 @@ class StylistApi extends Api {
   async getCustomers(stylistId: string): Promise<CustomersResponse> {
     try {
       return await this.request("get", `/${stylistId}/customers`);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateStylist(stylistId: string, data: StylistUpdateData) {
+    try {
+      return await this.request("put", `/${stylistId}`, data);
     } catch (error) {
       throw error;
     }

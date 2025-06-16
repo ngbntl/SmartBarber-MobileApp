@@ -90,9 +90,8 @@ const AppointmentCard = ({
   };
 
   useEffect(() => {
-    // Update hasRated state when appointment.isRated changes
-    setHasRated(!!appointment.isRated);
-  }, [appointment.isRated]);
+    setHasRated(!!appointment.isReviewed);
+  }, [appointment.isReviewed]);
 
   return (
     <TouchableOpacity

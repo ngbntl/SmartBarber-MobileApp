@@ -222,7 +222,21 @@
     "no_time_slots": "No available time slots",
     "booking_failed": "Booking failed",
     "complete_all_steps": "Please complete all steps",
-    "rate_stylist": "Rate Stylist"
+    "rate_stylist": "Rate",
+    "create_success": "Appointment created successfully",
+    "booking_confirmation": "Booking Confirmation",
+    "appointment_details": "Appointment Details",
+    "branch": "Branch",
+    "stylist": "Stylist",
+    "date_time": "Date & Time",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "payment_info": "Payment Information",
+    "pay_at_salon": "Pay at salon",
+    "payment_note": "Payment will be made at the salon after the service is completed.",
+    "cancellation_note": "Appointments can be cancelled free of charge at least 2 hours before the appointment time. Late cancellations may result in a fee.",
+    "confirm_and_book": "Confirm and Book",
+    "processing": "Processing..."
   },
   "hair_try_on": {
     "title": "Try on Hair Styles",

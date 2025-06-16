@@ -10,5 +10,5 @@ export interface Appointment {
   startTime?: string;
   durationMinutes?: number;
   finalAmount?: string;
-  isRated?: boolean;
+  isReviewed?: boolean;
 }

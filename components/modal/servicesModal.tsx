@@ -136,10 +136,10 @@ const ServicesModal = ({
     }
 
     // Check if minimum amount is met
-    if (totalPrice < voucher.minOrderAmount) {
+    if (totalPrice < voucher.minimumPurchaseAmount) {
       setVoucherError(
         t("vouchers.min_amount_required", {
-          minAmount: formatPrice(voucher.minOrderAmount),
+          minAmount: formatPrice(voucher.minimumPurchaseAmount),
         })
       );
       return;
@@ -157,11 +157,11 @@ const ServicesModal = ({
   const calculateDiscountAmount = () => {
     if (!selectedVoucher) return 0;
 
-    if (selectedVoucher.discountType === "fixed") {
+    if (selectedVoucher.isPercentage === false) {
       return selectedVoucher.discountAmount;
     } else {
       // Percentage discount
-      return Math.round(totalPrice * (selectedVoucher.discountAmount / 100));
+      return Math.round(totalPrice * (selectedVoucher.discountPercent / 100));
     }
   };
 
@@ -354,7 +354,7 @@ const ServicesModal = ({
                           <View className="flex-row items-center">
                             <View className="bg-primary/10 px-3 py-1 rounded-md">
                               <Text className="text-primary font-bold">
-                                {selectedVoucher.code}
+                                {selectedVoucher.name}
                               </Text>
                             </View>
                             <Text className="text-green-600 ml-2">
@@ -421,18 +421,18 @@ const ServicesModal = ({
                                 }}
                               >
                                 <Text className="text-primary font-bold">
-                                  {voucher.code}
+                                  {voucher.name}
                                 </Text>
                                 <Text className="text-xs text-gray-600 mt-1">
                                   {voucher.description}
                                 </Text>
                                 <Text className="text-xs text-green-600 mt-1">
-                                  {voucher.discountType === "fixed"
+                                  {voucher.isPercentage === false
                                     ? `${t("vouchers.discount")}: ${formatPrice(
                                         voucher.discountAmount
                                       )}`
                                     : `${t("vouchers.discount")}: ${
-                                        voucher.discountAmount
+                                        voucher.discountPercent
                                       }%`}
                                 </Text>
                               </TouchableOpacity>

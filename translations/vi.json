@@ -231,7 +231,22 @@
     "cancel_confirmation": "Bạn có chắc chắn muốn huỷ lịch hẹn này không?",
     "cancel_success": "Huỷ lịch hẹn thành công",
     "cancel_failed": "Huỷ lịch hẹn thất bại",
-    "no_services": "Không có dịch vụ nào được chọn"
+    "no_services": "Không có dịch vụ nào được chọn",
+    "rate_stylist": "Đánh giá ",
+    "create_success": "Tạo lịch hẹn thành công",
+    "booking_confirmation": "Xác nhận đặt lịch",
+    "appointment_details": "Chi tiết lịch hẹn",
+    "branch": "Chi nhánh",
+    "stylist": "Stylist",
+    "date_time": "Ngày giờ",
+    "subtotal": "Tạm tính",
+    "total": "Tổng cộng",
+    "payment_info": "Thông tin thanh toán",
+    "pay_at_salon": "Thanh toán tại salon",
+    "payment_note": "Thanh toán sẽ được thực hiện tại salon sau khi hoàn thành dịch vụ.",
+    "cancellation_note": "Lịch hẹn có thể được huỷ miễn phí ít nhất 2 giờ trước giờ hẹn. Việc huỷ muộn có thể dẫn đến phí.",
+    "confirm_and_book": "Xác nhận và đặt lịch",
+    "processing": "Đang xử lý..."
   },
   "settings": {
     "title": "Cài đặt",
