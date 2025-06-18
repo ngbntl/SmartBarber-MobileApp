@@ -34,7 +34,8 @@
     "error_loading_data": "Lỗi khi tải dữ liệu. Vui lòng thử lại.",
     "go_back": "Quay lại",
     "min": "phút",
-    "submitting": "Đang gửi..."
+    "submitting": "Đang gửi...",
+    "processing": "Đang xử lý..."
   },
   "time": {
     "just_now": "Vừa xong",
@@ -248,6 +249,9 @@
     "confirm_and_book": "Xác nhận và đặt lịch",
     "processing": "Đang xử lý..."
   },
+  "appointment": {
+    "create_success": "Tạo lịch hẹn thành công"
+  },
   "settings": {
     "title": "Cài đặt",
     "language": "Ngôn ngữ",
@@ -260,7 +264,20 @@
     "about": "Giới thiệu",
     "terms": "Điều khoản và Điều kiện",
     "contact": "Liên hệ",
-    "version": "Phiên bản"
+    "version": "Phiên bản",
+    "setting": "Cài đặt",
+    "security": "Bảo mật",
+    "help": "Trợ giúp",
+    "logout_title": "Đăng xuất",
+    "logout_message": "Bạn có chắc chắn muốn đăng xuất không?",
+    "edit_profile": "Chỉnh sửa hồ sơ",
+    "first_name": "Tên",
+    "last_name": "Họ",
+    "email": "Email",
+    "phone": "Số điện thoại",
+    "address": "Địa chỉ",
+    "save_changes": "Lưu thay đổi",
+    "cancel_changes": "Hủy"
   },
   "errors": {
     "something_wrong": "Đã có lỗi xảy ra. Vui lòng thử lại sau.",

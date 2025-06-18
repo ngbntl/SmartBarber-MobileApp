@@ -21,60 +21,8 @@ import { useTranslation } from "react-i18next";
 import Constants from "expo-constants";
 import { useNotification } from "@/hooks/useNotification";
 import Toast from "@/components/ui/Toast";
-
-const hairStyleSamples = [
-  { id: 1, name: "Bob Cut", image: "https://i.imgur.com/JQbiLVA.png" },
-  { id: 2, name: "Pixie Cut", image: "https://i.imgur.com/ymTyqQj.png" },
-  { id: 3, name: "Long Layers", image: "https://i.imgur.com/R5LvPCd.png" },
-  { id: 4, name: "Curly", image: "https://i.imgur.com/0sxs23M.png" },
-  { id: 5, name: "Wavy", image: "https://i.imgur.com/RlDKHmy.png" },
-  { id: 6, name: "Short", image: "https://i.imgur.com/AbAKZYO.png" },
-];
-
-const hairColorSamples = [
-  {
-    id: 1,
-    name: "Blonde",
-    color: "#E6BE8A",
-    image: "https://i.imgur.com/gXGKjU9.png",
-  },
-  {
-    id: 2,
-    name: "Brown",
-    color: "#8C4C36",
-    image: "https://i.imgur.com/NfLv5Cc.png",
-  },
-  {
-    id: 3,
-    name: "Black",
-    color: "#252525",
-    image: "https://i.imgur.com/trcEDPG.png",
-  },
-  {
-    id: 4,
-    name: "Red",
-    color: "#BC4E29",
-    image: "https://i.imgur.com/ShTEslX.png",
-  },
-  {
-    id: 5,
-    name: "Silver",
-    color: "#C0C0C0",
-    image: "https://i.imgur.com/c7aBgW7.png",
-  },
-  {
-    id: 6,
-    name: "Pink",
-    color: "#FF9AFF",
-    image: "https://i.imgur.com/xK8MiJ9.png",
-  },
-  {
-    id: 7,
-    name: "Blue",
-    color: "#4F86F7",
-    image: "https://i.imgur.com/47AVKk9.png",
-  },
-];
+import HairStyleApi from "@/api/hairstyles";
+import HairColorApi from "@/api/haircolors";
 
 const { width } = Dimensions.get("window");
 const ITEM_WIDTH = width * 0.28;
@@ -90,6 +38,8 @@ const HairTryOnScreen = () => {
   const [step, setStep] = useState(1);
   const [selectedHairStyle, setSelectedHairStyle] = useState(null);
   const [selectedHairColor, setSelectedHairColor] = useState(null);
+  const [fetchedHairStyles, setFetchedHairStyles] = useState([]);
+  const [fetchedHairColors, setFetchedHairColors] = useState([]);
   const { appNotification, toast, setToast } = useNotification();
 
   useEffect(() => {
@@ -103,6 +53,30 @@ const HairTryOnScreen = () => {
         if (cameraStatus !== "granted" || galleryStatus !== "granted") {
           Alert.alert(t("common.error"), t("hair_try_on.permission_needed"));
         }
+      }
+
+      try {
+        const hairStyleApi = new HairStyleApi();
+        const stylesResponse = await hairStyleApi.getAllStyles();
+
+        if (stylesResponse && stylesResponse.items) {
+          console.log("Fetched hair styles:", stylesResponse.items);
+          setFetchedHairStyles(stylesResponse.items);
+        } else {
+          console.warn("No hair styles found in the response");
+        }
+
+        // Lấy màu tóc
+        const hairColorApi = new HairColorApi();
+        const colorsResponse = await hairColorApi.getAllColors();
+        if (colorsResponse && colorsResponse.items) {
+          console.log("Fetched hair colors:", colorsResponse.items);
+          setFetchedHairColors(colorsResponse.items);
+        } else {
+          console.warn("No hair colors found in the response");
+        }
+      } catch (error) {
+        console.error("Error fetching hair styles or colors:", error);
       }
     })();
   }, []);
@@ -132,12 +106,12 @@ const HairTryOnScreen = () => {
   };
 
   const selectHairStyle = (item) => {
-    setHairShapeImage(item.image);
+    setHairShapeImage(item.imageUrl || item.image);
     setSelectedHairStyle(item.id);
   };
 
   const selectHairColor = (item) => {
-    setHairColorImage(item.image);
+    setHairColorImage(item.imageUrl || item.image);
     setSelectedHairColor(item.id);
   };
 
@@ -346,6 +320,7 @@ const HairTryOnScreen = () => {
       console.warn("API didn't return an image URL, using fallback image");
     }
     setStep(4);
+    setIsProcessing(false);
   };
 
   const resetImages = () => {
@@ -373,7 +348,7 @@ const HairTryOnScreen = () => {
         style={{ width: ITEM_WIDTH, height: ITEM_HEIGHT }}
       >
         <Image
-          source={{ uri: item.image }}
+          source={{ uri: item.imageUrl || item.image }}
           className="w-full h-full"
           style={{ resizeMode: "cover" }}
         />
@@ -403,24 +378,18 @@ const HairTryOnScreen = () => {
         style={{ width: ITEM_WIDTH, height: ITEM_HEIGHT }}
       >
         <Image
-          source={{ uri: item.image }}
+          source={{ uri: item.imageUrl || item.image }}
           className="w-full h-full"
           style={{ resizeMode: "cover" }}
         />
       </View>
-      <View className="flex-row items-center justify-center mt-1">
-        <View
-          className="h-3 w-3 rounded-full mr-1"
-          style={{ backgroundColor: item.color }}
-        />
-        <Text
-          className={`text-xs font-medium ${
-            selectedHairColor === item.id ? "text-primary" : "text-gray-700"
-          }`}
-        >
-          {item.name}
-        </Text>
-      </View>
+      <Text
+        className={`text-xs font-medium text-center mt-1 ${
+          selectedHairColor === item.id ? "text-primary" : "text-gray-700"
+        }`}
+      >
+        {item.name}
+      </Text>
     </TouchableOpacity>
   );
 
@@ -567,7 +536,11 @@ const HairTryOnScreen = () => {
                     {t("hair_try_on.selectSuggestions")}
                   </Text>
                   <FlatList
-                    data={hairStyleSamples}
+                    data={
+                      fetchedHairStyles.length > 0
+                        ? fetchedHairStyles
+                        : hairStyleSamples
+                    }
                     renderItem={renderHairStyleItem}
                     keyExtractor={(item) => item.id.toString()}
                     horizontal
@@ -593,7 +566,11 @@ const HairTryOnScreen = () => {
                     {t("hair_try_on.colorSuggestions")}
                   </Text>
                   <FlatList
-                    data={hairColorSamples}
+                    data={
+                      fetchedHairColors.length > 0
+                        ? fetchedHairColors
+                        : hairColorSamples
+                    }
                     renderItem={renderHairColorItem}
                     keyExtractor={(item) => item.id.toString()}
                     horizontal

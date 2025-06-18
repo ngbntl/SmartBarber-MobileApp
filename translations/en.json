@@ -35,7 +35,8 @@
     "go_back": "Go back",
     "min": "min",
     "submitting": "Submitting...",
-    "service": "service"
+    "service": "service",
+    "processing": "Processing..."
   },
   "time": {
     "just_now": "Just now",
@@ -297,7 +298,20 @@
     "about": "About Us",
     "terms": "Terms and Conditions",
     "contact": "Contact Us",
-    "version": "Version"
+    "version": "Version",
+    "setting": "Settings",
+    "security": "Security",
+    "help": "Help Center",
+    "logout_title": "Logout",
+    "logout_message": "Are you sure you want to logout?",
+    "edit_profile": "Edit Profile",
+    "first_name": "First Name",
+    "last_name": "Last Name",
+    "email": "Email",
+    "phone": "Phone Number",
+    "address": "Address",
+    "save_changes": "Save Changes",
+    "cancel_changes": "Cancel"
   },
   "errors": {
     "something_wrong": "Something went wrong. Please try again later.",

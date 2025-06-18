@@ -253,7 +253,20 @@
     "about": "会社について",
     "terms": "利用規約",
     "contact": "お問い合わせ",
-    "version": "バージョン"
+    "version": "バージョン",
+    "setting": "設定",
+    "security": "セキュリティ",
+    "help": "ヘルプセンター",
+    "logout_title": "ログアウト",
+    "logout_message": "ログアウトしてもよろしいですか？",
+    "edit_profile": "プロフィールを編集",
+    "first_name": "名",
+    "last_name": "姓",
+    "email": "メールアドレス",
+    "phone": "電話番号",
+    "address": "住所",
+    "save_changes": "変更を保存",
+    "cancel_changes": "キャンセル"
   },
   "errors": {
     "something_wrong": "問題が発生しました。後でもう一度お試しください。",

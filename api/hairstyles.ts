@@ -5,11 +5,12 @@ class HairStyleApi extends Api {
     super("hairstyles");
   }
 
-  async getHairStyles() {
+  async getAllStyles() {
     try {
       return await this.request("get", "/");
     } catch (error) {
-      throw error;
+      console.error("Error fetching hair styles:", error);
+      return { data: [] };
     }
   }
 }
