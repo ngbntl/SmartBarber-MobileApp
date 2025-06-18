@@ -37,7 +37,6 @@ const Profile = () => {
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
   const [notifications, setNotifications] = useState(true);
-  const [editProfileModalVisible, setEditProfileModalVisible] = useState(false);
 
   // Thông tin profile
   const firstName = userInfo?.firstName || "";
