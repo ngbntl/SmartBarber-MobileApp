@@ -168,18 +168,9 @@
     "new": "Mới",
     "branches": "Chi nhánh",
     "search_placeholder": "Tìm kiếm dịch vụ, chi nhánh...",
-    "slide1": {
-      "title": "Tạo phong cách riêng bạn",
-      "description": "Khám phá các kiểu tóc phù hợp khuôn mặt và cá tính"
-    },
-    "slide2": {
-      "title": "Đặt lịch nhanh chóng",
-      "description": "Chọn barber, chọn giờ – không xếp hàng, không chờ đợi"
-    },
-    "slide3": {
-      "title": "Trải nghiệm barber đỉnh",
-      "description": "Uy tín, đánh giá thật – mang lại trải nghiệm chất lượng"
-    }
+    "no_search_results": "Không tìm thấy kết quả nào",
+    "view_all_services": "Xem tất cả dịch vụ",
+    "view_all_branches": "Xem tất cả chi nhánh"
   },
   "onboarding": {
     "slide1": {

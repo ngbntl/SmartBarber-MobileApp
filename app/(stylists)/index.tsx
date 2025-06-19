@@ -385,29 +385,25 @@ const StylistHomeScreen = () => {
                 <Text className="text-2xl font-bold text-white">
                   {userInfo?.firstName} {userInfo?.lastName}
                 </Text>
-                <View className="flex-row items-center bg-white/20 rounded-xl py-1 px-2 mt-2 self-start">
-                  <Ionicons name="star" size={16} color="#FFD700" />
-                  <Text className="text-white font-semibold ml-1">4.9</Text>
-                </View>
               </View>
 
               <View className="flex-row items-center">
                 <TouchableOpacity
                   className="relative mr-4"
-                  onPress={() => router.push("/(stylists)/notifications")}
+                  // onPress={() => router.push("/(stylists)/notifications")}
                 >
                   <Ionicons
                     name="notifications-outline"
                     size={24}
                     color="#ffffff"
                   />
-                  {hasNewNotifications && (
+                  {/* {hasNewNotifications && (
                     <View className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full items-center justify-center">
                       <Text className="text-[10px] font-bold text-white">
                         2
                       </Text>
                     </View>
-                  )}
+                  )} */}
                 </TouchableOpacity>
 
                 <View className="relative">

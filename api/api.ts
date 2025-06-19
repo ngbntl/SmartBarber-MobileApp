@@ -15,8 +15,8 @@ class Api {
     headers: Record<string, string> = {}
   ) {
     const url = `${Constants.expoConfig?.extra?.API_NETWORK}/${this.uri}${path}`;
-    console.log("API URL:", url);
-    console.log("API Data:", data);
+    // console.log("API URL:", url);
+    // console.log("API Data:", data);
 
     // Lấy token từ Redux store
     const token = store.getState().auth.user?.accessToken;
@@ -53,7 +53,7 @@ class Api {
       .then(async (response) => {
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`HTTP error ${response.status}: ${errorText}`);
+          // console.error(`HTTP error ${response.status}: ${errorText}`);
 
           let errorData;
           try {
@@ -83,7 +83,7 @@ class Api {
         }
       })
       .catch((error) => {
-        console.error("API request error:", error);
+        // console.error("API request error:", error);
         throw error;
       });
   }

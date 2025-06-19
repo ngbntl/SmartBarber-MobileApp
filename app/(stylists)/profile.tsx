@@ -89,22 +89,18 @@ const Profile = () => {
   const settingItems = [
     {
       icon: "shield-outline",
-      label: t("settings.security", "Bảo mật"),
+      label: t("Bảo mật"),
       action: () => console.log("Navigate to Security"),
     },
-    {
-      icon: "language-outline",
-      label: t("settings.language", "Ngôn ngữ"),
-      action: () => console.log("Navigate to Language"),
-    },
+
     {
       icon: "help-circle-outline",
-      label: t("settings.help", "Trợ giúp"),
+      label: t("Trợ giúp"),
       action: () => console.log("Navigate to Help Center"),
     },
     {
       icon: "information-circle-outline",
-      label: t("settings.about", "Thông tin ứng dụng"),
+      label: t("Thông tin ứng dụng"),
       action: () => console.log("Navigate to About"),
     },
   ];
@@ -441,7 +437,7 @@ const Profile = () => {
               </View>
             )}
 
-            <View className="flex-row justify-between items-center py-4 border-b border-gray-100">
+            {/* <View className="flex-row justify-between items-center py-4 border-b border-gray-100">
               <View className="flex-row items-center">
                 <Ionicons
                   name="notifications-outline"
@@ -465,7 +461,7 @@ const Profile = () => {
                   </Text>
                 </TouchableOpacity>
               </View>
-            </View>
+            </View> */}
 
             {/* Settings Navigation Items */}
             {settingItems.map((item, index) => (

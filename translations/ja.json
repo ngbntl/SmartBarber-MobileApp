@@ -165,7 +165,10 @@
     "button_try_on": "今すぐ試す",
     "new": "新着",
     "branches": "支店",
-    "search_placeholder": "サービスや支店を検索..."
+    "search_placeholder": "サービスや支店を検索...",
+    "no_search_results": "検索結果が見つかりません",
+    "view_all_services": "すべてのサービスを表示",
+    "view_all_branches": "すべての支店を表示"
   },
   "onboarding": {
     "slide1": {

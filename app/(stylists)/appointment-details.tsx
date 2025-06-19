@@ -69,7 +69,6 @@ const AppointmentDetails = () => {
         });
       }
     } catch (error) {
-      console.error("Error fetching appointment details:", error);
       setToast({
         message: "Đã xảy ra lỗi khi tải thông tin cuộc hẹn",
         type: "error",
@@ -98,7 +97,6 @@ const AppointmentDetails = () => {
               console.log(response);
               appNotification(response);
 
-              // Update appointment status in local state
               setAppointment({
                 ...appointment,
                 status: "confirmed",
@@ -106,7 +104,6 @@ const AppointmentDetails = () => {
 
               await fetchAppointmentDetails();
             } catch (error) {
-              console.error("Error confirming appointment:", error);
               appNotification(error);
             } finally {
               setConfirmLoading(false);
@@ -134,7 +131,6 @@ const AppointmentDetails = () => {
                 appointment.id,
                 "completed"
               );
-
               appNotification(response);
 
               setAppointment({
@@ -144,7 +140,6 @@ const AppointmentDetails = () => {
 
               await fetchAppointmentDetails();
             } catch (error) {
-              console.error("Error marking appointment as completed:", error);
               appNotification(error);
             } finally {
               setCompleteLoading(false);
@@ -477,20 +472,6 @@ const AppointmentDetails = () => {
             )}
           </View>
         )}
-
-        {/* Add Note Section */}
-        <View className="mx-4 mb-8">
-          <TouchableOpacity
-            onPress={() => setModalVisible(true)}
-            className="flex-row items-center p-4 bg-blue-600 rounded-xl shadow-sm"
-            activeOpacity={0.8}
-          >
-            <Ionicons name="add" size={22} color="white" className="mr-3" />
-            <Text className="text-white font-semibold text-base">
-              Thêm ghi chú
-            </Text>
-          </TouchableOpacity>
-        </View>
 
         <View className="h-8" />
       </ScrollView>
