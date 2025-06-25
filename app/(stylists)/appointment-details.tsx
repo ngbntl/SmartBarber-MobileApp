@@ -9,9 +9,17 @@ import {
   Alert,
   Modal,
   TextInput,
+  KeyboardAvoidingView,
+  TouchableWithoutFeedback,
+  Keyboard,
+  Dimensions,
+  Platform,
 } from "react-native";
 import { Stack, useRouter, useLocalSearchParams } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector } from "react-redux";
 import AppointmentsApi from "@/api/appointments";
@@ -41,8 +49,12 @@ const AppointmentDetails = () => {
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [completeLoading, setCompleteLoading] = useState(false);
   const [noShowLoading, setNoShowLoading] = useState(false);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [note, setNote] = useState("");
+  const [inProgressLoading, setInProgressLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
+
+  // Add state for modal visibility and reason text
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
 
   useEffect(() => {
     fetchAppointmentDetails();
@@ -187,6 +199,83 @@ const AppointmentDetails = () => {
     );
   };
 
+  const startAppointment = async () => {
+    if (!appointment?.id) return;
+
+    Alert.alert(
+      "Bắt đầu cuộc hẹn",
+      "Bạn có chắc chắn muốn bắt đầu cuộc hẹn này?",
+      [
+        { text: "Hủy", style: "cancel" },
+        {
+          text: "Bắt đầu",
+          onPress: async () => {
+            try {
+              setInProgressLoading(true);
+              const response = await appointmentsApi.updateAppointmentStatus(
+                appointment.id,
+                "in-progress"
+              );
+              appNotification(response);
+
+              setAppointment({
+                ...appointment,
+                status: "in-progress",
+              });
+
+              await fetchAppointmentDetails();
+            } catch (error) {
+              appNotification(error);
+            } finally {
+              setInProgressLoading(false);
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  const cancelAppointment = async () => {
+    if (!appointment?.id) return;
+
+    // Show modal to enter reason instead of alert
+    setCancelModalVisible(true);
+  };
+
+  const handleCancelAppointment = async () => {
+    if (!appointment?.id || !cancelReason.trim()) {
+      setToast({
+        message: "Vui lòng nhập lý do hủy cuộc hẹn",
+        type: "error",
+      });
+      return;
+    }
+
+    try {
+      setCancelLoading(true);
+      const response = await appointmentsApi.stylistCancelAppointment(
+        appointment.id,
+        cancelReason
+      );
+      appNotification(response);
+
+      setAppointment({
+        ...appointment,
+        status: "cancelled",
+      });
+
+      await fetchAppointmentDetails();
+
+      // Reset and close modal
+      setCancelReason("");
+      setCancelModalVisible(false);
+    } catch (error) {
+      appNotification(error);
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+
   const getStatusColor = (status: string) => {
     if (!status) return "#94a3b8";
 
@@ -195,6 +284,7 @@ const AppointmentDetails = () => {
     if (status === "confirmed") return "#3b82f6"; // blue
     if (status === "pending") return "#f59e0b"; // amber
     if (status === "cancelled") return "#ef4444"; // red
+    if (status === "in-progress") return "#8b5cf6"; // purple
 
     return "#94a3b8";
   };
@@ -204,31 +294,6 @@ const AppointmentDetails = () => {
 
     status = status.toLowerCase();
     return t(`appointment_status.${status}`);
-  };
-
-  const handleAddNote = async () => {
-    if (!appointment?.id || !note.trim()) return;
-
-    try {
-      setLoading(true);
-      const response = await appointmentsApi.addAppointmentNote(
-        appointment.id,
-        {
-          note: note.trim(),
-        }
-      );
-
-      appNotification(response);
-      setModalVisible(false);
-      setNote("");
-
-      await fetchAppointmentDetails();
-    } catch (error) {
-      console.error("Error adding note to appointment:", error);
-      appNotification(error);
-    } finally {
-      setLoading(false);
-    }
   };
 
   if (loading) {
@@ -284,6 +349,7 @@ const AppointmentDetails = () => {
       : "Khách hàng";
   const isPending = appointment.status?.toLowerCase() === "pending";
   const isConfirmed = appointment.status?.toLowerCase() === "confirmed";
+  const isInProgress = appointment.status?.toLowerCase() === "in-progress";
   const appointmentPassed = new Date() > appointmentTime;
 
   return (
@@ -404,7 +470,7 @@ const AppointmentDetails = () => {
 
         {/* Actions */}
         {isPending && (
-          <View className="mx-4 mt-4 mb-8">
+          <View className="mx-4 mt-4 mb-4">
             <Button
               title="Xác nhận cuộc hẹn"
               onPress={confirmAppointment}
@@ -412,6 +478,35 @@ const AppointmentDetails = () => {
               disabled={confirmLoading}
               className="rounded-lg"
             />
+
+            {/* Cancel button for Pending status */}
+            <View className="mt-3">
+              <TouchableOpacity
+                onPress={cancelAppointment}
+                disabled={cancelLoading}
+                className={`flex-row items-center p-4 rounded-xl ${
+                  cancelLoading ? "bg-red-100" : "bg-red-500"
+                } shadow-sm`}
+                activeOpacity={0.8}
+              >
+                <View className="w-10 h-10 bg-white rounded-full items-center justify-center mr-3">
+                  <Ionicons
+                    name="close-circle-outline"
+                    size={22}
+                    color="#ef4444"
+                  />
+                </View>
+                <View className="flex-1">
+                  <Text className="text-white font-semibold text-base">
+                    {cancelLoading ? "Đang xử lý..." : "Hủy cuộc hẹn"}
+                  </Text>
+                  <Text className="text-white text-xs opacity-90 mt-1">
+                    Hủy cuộc hẹn với khách hàng
+                  </Text>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color="white" />
+              </TouchableOpacity>
+            </View>
           </View>
         )}
 
@@ -422,22 +517,22 @@ const AppointmentDetails = () => {
             </Text>
 
             <TouchableOpacity
-              onPress={completeAppointment}
-              disabled={completeLoading || noShowLoading}
+              onPress={startAppointment}
+              disabled={inProgressLoading}
               className={`flex-row items-center p-4 mb-3 rounded-xl ${
-                completeLoading ? "bg-green-100" : "bg-green-600"
+                inProgressLoading ? "bg-purple-100" : "bg-purple-600"
               } shadow-sm`}
               activeOpacity={0.8}
             >
               <View className="w-10 h-10 bg-white rounded-full items-center justify-center mr-3">
-                <Ionicons name="checkmark" size={22} color="#16a34a" />
+                <Ionicons name="play" size={22} color="#8b5cf6" />
               </View>
               <View className="flex-1">
                 <Text className="text-white font-semibold text-base">
-                  {completeLoading ? "Đang xử lý..." : "Đánh dấu hoàn thành"}
+                  {inProgressLoading ? "Đang xử lý..." : "Bắt đầu cuộc hẹn"}
                 </Text>
                 <Text className="text-white text-xs opacity-90 mt-1">
-                  Xác nhận dịch vụ đã được thực hiện
+                  Đánh dấu cuộc hẹn là đang diễn ra
                 </Text>
               </View>
               <Ionicons name="chevron-forward" size={22} color="white" />
@@ -465,59 +560,168 @@ const AppointmentDetails = () => {
               <Ionicons name="chevron-forward" size={22} color="white" />
             </TouchableOpacity>
 
-            {!appointmentPassed && (
-              <Text className="text-center text-gray-500 mt-3 text-xs">
-                Chỉ đánh dấu khách không đến sau khi thời gian cuộc hẹn đã qua.
-              </Text>
-            )}
+            {/* Cancel button for Confirmed status */}
+            <TouchableOpacity
+              onPress={cancelAppointment}
+              disabled={cancelLoading}
+              className={`flex-row items-center p-4 mt-3 rounded-xl ${
+                cancelLoading ? "bg-red-100" : "bg-red-500"
+              } shadow-sm`}
+              activeOpacity={0.8}
+            >
+              <View className="w-10 h-10 bg-white rounded-full items-center justify-center mr-3">
+                <Ionicons
+                  name="close-circle-outline"
+                  size={22}
+                  color="#ef4444"
+                />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white font-semibold text-base">
+                  {cancelLoading ? "Đang xử lý..." : "Hủy cuộc hẹn"}
+                </Text>
+                <Text className="text-white text-xs opacity-90 mt-1">
+                  Hủy cuộc hẹn với khách hàng
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="white" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {isInProgress && (
+          <View className="px-4 mt-4 mb-8">
+            <Text className="font-semibold text-gray-700 mb-3">
+              Cập nhật trạng thái:
+            </Text>
+
+            <TouchableOpacity
+              onPress={completeAppointment}
+              disabled={completeLoading}
+              className={`flex-row items-center p-4 mb-3 rounded-xl ${
+                completeLoading ? "bg-green-100" : "bg-green-600"
+              } shadow-sm`}
+              activeOpacity={0.8}
+            >
+              <View className="w-10 h-10 bg-white rounded-full items-center justify-center mr-3">
+                <Ionicons name="checkmark" size={22} color="#16a34a" />
+              </View>
+              <View className="flex-1">
+                <Text className="text-white font-semibold text-base">
+                  {completeLoading ? "Đang xử lý..." : "Đánh dấu hoàn thành"}
+                </Text>
+                <Text className="text-white text-xs opacity-90 mt-1">
+                  Xác nhận dịch vụ đã được thực hiện
+                </Text>
+              </View>
+              <Ionicons name="chevron-forward" size={22} color="white" />
+            </TouchableOpacity>
           </View>
         )}
 
         <View className="h-8" />
       </ScrollView>
 
-      {/* Note Modal */}
+      {/* Cancel appointment reason modal */}
       <Modal
-        visible={modalVisible}
+        visible={cancelModalVisible}
         animationType="slide"
         transparent={true}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => setCancelModalVisible(false)}
       >
-        <View className="flex-1 justify-center items-center bg-black bg-opacity-50">
-          <View className="w-full max-w-md bg-white rounded-xl p-6">
-            <Text className="text-lg font-semibold mb-4">
-              Thêm ghi chú cho cuộc hẹn
-            </Text>
-
-            <TextInput
-              multiline
-              value={note}
-              onChangeText={setNote}
-              placeholder="Nhập ghi chú ở đây..."
-              className="border rounded-lg p-3 text-base h-24"
-              placeholderTextColor="#94a3b8"
-            />
-
-            <View className="flex-row justify-end mt-4">
-              <TouchableOpacity
-                onPress={() => setModalVisible(false)}
-                className="px-4 py-2 rounded-lg bg-gray-200 mr-2"
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          style={{ flex: 1 }}
+        >
+          <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
+            <View className="flex-1 justify-end bg-black/50">
+              <View
+                className="bg-white rounded-t-3xl overflow-hidden"
+                style={{
+                  paddingBottom: Platform.OS === "android" ? 0 : insets.bottom,
+                  maxHeight: Dimensions.get("window").height * 0.7,
+                }}
               >
-                <Text className="text-gray-700">Hủy</Text>
-              </TouchableOpacity>
+                {/* Header */}
+                <View className="flex-row items-center justify-between px-5 pt-4 pb-2">
+                  <Text className="text-xl font-bold text-gray-800">
+                    Hủy cuộc hẹn
+                  </Text>
+                  <TouchableOpacity
+                    className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                    onPress={() => setCancelModalVisible(false)}
+                  >
+                    <Ionicons name="close" size={20} color="#666" />
+                  </TouchableOpacity>
+                </View>
 
-              <TouchableOpacity
-                onPress={handleAddNote}
-                className="px-4 py-2 rounded-lg bg-blue-600"
-                disabled={loading}
-              >
-                <Text className="text-white font-semibold">
-                  {loading ? "Đang lưu..." : "Lưu ghi chú"}
-                </Text>
-              </TouchableOpacity>
+                {/* Appointment Info */}
+                <View className="px-5 py-3">
+                  <View className="flex-row items-center">
+                    <View className="w-9 h-9 rounded-full bg-red-100 items-center justify-center">
+                      <Ionicons name="calendar" size={20} color="#ef4444" />
+                    </View>
+                    <View className="ml-3">
+                      <Text className="text-base font-bold text-gray-800">
+                        {formatDateWithWeekday(appointmentTime)}
+                      </Text>
+                      <Text className="text-xs text-red-500">
+                        Hủy cuộc hẹn với khách hàng
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+
+                <ScrollView
+                  className="max-h-[200px]"
+                  showsVerticalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 20 }}
+                  keyboardShouldPersistTaps="handled"
+                >
+                  {/* Reason Input */}
+                  <View className="mb-4 mt-2">
+                    <Text className="text-gray-700 text-sm font-medium mb-2">
+                      Lý do hủy
+                    </Text>
+                    <TextInput
+                      className="bg-gray-50 rounded-xl py-2 px-3 border border-gray-200 text-gray-800"
+                      placeholder="Nhập lý do hủy cuộc hẹn (bắt buộc)"
+                      value={cancelReason}
+                      onChangeText={setCancelReason}
+                      multiline={true}
+                      numberOfLines={3}
+                      textAlignVertical="top"
+                      style={{ minHeight: 80 }}
+                    />
+                  </View>
+                </ScrollView>
+
+                {/* Action Buttons */}
+                <View className="p-4 pt-2 border-t border-gray-100">
+                  <View className="flex-row space-x-3 pb-4">
+                    <TouchableOpacity
+                      className="flex-1 py-3 rounded-xl border border-gray-200 items-center justify-center"
+                      onPress={() => setCancelModalVisible(false)}
+                    >
+                      <Text className="font-medium text-gray-700">Hủy</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      className="flex-1 py-3 rounded-xl items-center justify-center bg-red-500"
+                      onPress={handleCancelAppointment}
+                      disabled={cancelLoading}
+                    >
+                      {cancelLoading ? (
+                        <ActivityIndicator color="white" size="small" />
+                      ) : (
+                        <Text className="font-medium text-white">Xác nhận</Text>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
             </View>
-          </View>
-        </View>
+          </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

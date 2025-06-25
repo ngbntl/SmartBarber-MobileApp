@@ -40,6 +40,7 @@ import Toast from "@/components/ui/Toast";
 import RatingPromptModal from "@/components/modal/RatingPromptModal";
 import useRatingPrompt from "@/hooks/useRatingPrompt";
 import RatingsApi from "@/api/reviews";
+import NotificationApi from "@/api/notifications";
 
 const getCurrentLocale = (): string => {
   const localeMap: Record<string, string> = {
@@ -71,6 +72,9 @@ const HomeScreen = () => {
   const [filteredServices, setFilteredServices] = useState<any[]>([]);
   const [filteredBranches, setFilteredBranches] = useState<any[]>([]);
 
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
+
   const carouselRef = useRef(null);
   const { appNotification, toast, setToast } = useNotification();
 
@@ -90,6 +94,28 @@ const HomeScreen = () => {
 
   const fetchData = async () => {
     await Promise.all([fetchAppointments(), fetchServices(), fetchBranches()]);
+  };
+
+  const fetchUnreadNotificationCount = async () => {
+    try {
+      const notificationApi = new NotificationApi();
+      const response = await notificationApi.getUnreadCount();
+
+      if (response && typeof response.count === "number") {
+        setUnreadCount(response.count);
+        setHasNewNotifications(response.count > 0);
+      } else if (typeof response === "number") {
+        setUnreadCount(response);
+        setHasNewNotifications(response > 0);
+      } else {
+        setUnreadCount(0);
+        setHasNewNotifications(false);
+      }
+    } catch (error) {
+      console.error("Error fetching unread notifications count:", error);
+      setUnreadCount(0);
+      setHasNewNotifications(false);
+    }
   };
 
   const filterUpcomingAppointments = (appointments: Appointment[]) => {
@@ -176,16 +202,19 @@ const HomeScreen = () => {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await fetchData();
+    fetchUnreadNotificationCount();
     setRefreshing(false);
   }, [user]);
 
   useEffect(() => {
     fetchData();
+    fetchUnreadNotificationCount();
   }, [user]);
 
   useFocusEffect(
     useCallback(() => {
       fetchAppointments();
+      fetchUnreadNotificationCount();
     }, [user])
   );
 
@@ -391,9 +420,16 @@ const HomeScreen = () => {
               <TouchableOpacity
                 className="w-11 h-11 bg-white rounded-full shadow-md justify-center items-center"
                 activeOpacity={0.7}
-                onPress={() => router.push("/")}
+                onPress={() => router.push("/notifications")}
               >
                 <Icon name="noti" size={24} color={Colors.primary} />
+                {hasNewNotifications && (
+                  <View className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full justify-center items-center">
+                    <Text className="text-white text-xs font-semibold">
+                      {unreadCount}
+                    </Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
 

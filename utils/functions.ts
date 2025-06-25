@@ -17,6 +17,29 @@ const getCurrentLocale = (): string => {
 };
 
 /**
+ * Utility function to conditionally join classNames together
+ * @param classes - Array of class strings or objects where keys are class names and values are booleans
+ * @returns Combined class string
+ */
+export function classNames(
+  ...classes: (string | Record<string, boolean> | null | undefined)[]
+): string {
+  return classes
+    .filter(Boolean)
+    .map((cls) => {
+      if (typeof cls === "string") return cls;
+      if (cls && typeof cls === "object") {
+        return Object.entries(cls)
+          .filter(([_, value]) => Boolean(value))
+          .map(([key, _]) => key)
+          .join(" ");
+      }
+      return "";
+    })
+    .join(" ");
+}
+
+/**
  * Format countdown to an appointment
  * @param appointmentDate Date object or date string of the appointment
  * @returns Formatted countdown string (e.g., "Còn 2 giờ 30 phút tới lịch hẹn")
@@ -73,20 +96,40 @@ export const formatCountdown = (appointmentDate: Date | string): string => {
 
 /**
  * Format a date to a standard date string based on current language
- * @param date Date object or date string
+ * @param date Date object, date string or timestamp
  * @returns Formatted date string
  */
-export const formatDate = (date: Date | string): string => {
+export const formatDate = (date: Date | string | number): string => {
   if (!date) return "";
 
-  const dateObj = typeof date === "string" ? new Date(date) : date;
+  let dateObj: Date;
+
+  if (typeof date === "number") {
+    dateObj = new Date(date);
+  } else if (typeof date === "string") {
+    dateObj = new Date(date);
+  } else {
+    dateObj = date;
+  }
+
+  // Check if the date is valid before calling toLocaleDateString
+  if (isNaN(dateObj.getTime())) {
+    console.error("Invalid date:", date);
+    return "";
+  }
+
   const locale = getCurrentLocale();
 
-  return dateObj.toLocaleDateString(locale, {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  try {
+    return dateObj.toLocaleDateString(locale, {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return date.toString();
+  }
 };
 
 /**

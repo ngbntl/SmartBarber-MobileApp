@@ -93,6 +93,20 @@ export default function UsersTabLayout() {
           href: null,
         }}
       />
+
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="notificationDetail"
+        options={{
+          href: null,
+        }}
+      />
     </Tabs>
   );
 }

@@ -16,7 +16,7 @@ class Api {
   ) {
     const url = `${Constants.expoConfig?.extra?.API_NETWORK}/${this.uri}${path}`;
     // console.log("API URL:", url);
-    // console.log("API Data:", data);
+    console.log("API Data:", data);
 
     // Lấy token từ Redux store
     const token = store.getState().auth.user?.accessToken;

@@ -63,6 +63,19 @@ class AppointmentsApi extends Api {
       throw error;
     }
   }
+
+  async stylistCancelAppointment(
+    appointmentId: string,
+    emergencyReason: string
+  ) {
+    try {
+      return await this.request("put", `/emergency-cancel/${appointmentId}`, {
+        emergencyReason,
+      });
+    } catch (error) {
+      throw error;
+    }
+  }
 }
 
 export default AppointmentsApi;

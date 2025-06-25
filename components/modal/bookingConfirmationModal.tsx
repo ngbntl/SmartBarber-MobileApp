@@ -30,6 +30,7 @@ interface BookingConfirmationModalProps {
     timeSlot?: string;
     totalPrice?: number;
     discountAmount?: number;
+    discountPercentage: number;
     voucher: any | null;
   };
   isLoading?: boolean;
@@ -44,7 +45,6 @@ const BookingConfirmationModal = ({
 }: BookingConfirmationModalProps) => {
   const { t } = useTranslation();
 
-  // Add validation to prevent errors when data is null
   if (
     !appointmentData ||
     !appointmentData.branch ||

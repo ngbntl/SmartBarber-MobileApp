@@ -43,6 +43,20 @@ export default function StylistLayout() {
       />
 
       <Tabs.Screen
+        name="notificationDetail"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="notifications"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
         name="index"
         options={{
           title: "Trang chủ",

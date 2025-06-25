@@ -129,7 +129,26 @@
     "home": "Home",
     "bookings": "Bookings",
     "hairTryOn": "Try On",
-    "account": "Account"
+    "account": "Account",
+    "notifications": "Notifications"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "noNotifications": "You don't have any notifications yet",
+    "markAllAsRead": "Mark all as read",
+    "clearAll": "Clear all",
+    "appointment": "Appointment",
+    "promotion": "Promotion",
+    "system": "System",
+    "new": "New",
+    "readMore": "Read more",
+    "notificationDetail": "Notification Detail",
+    "notificationNotFound": "Notification not found",
+    "viewPromotion": "View Promotion",
+    "viewAppointment": "View Appointment",
+    "markAsRead": "Mark as read",
+    "deleteNotification": "Delete notification",
+    "notificationDeleted": "Notification deleted successfully"
   },
   "appointment_status": {
     "pending": "Chờ xác nhận",

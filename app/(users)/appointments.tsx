@@ -359,6 +359,16 @@ const AppointmentsScreen = () => {
         notes: "",
       };
 
+      console.log(
+        "Appointment data being sent to API:",
+        JSON.stringify(appointmentData, null, 2)
+      );
+      console.log(
+        "discountAmount type:",
+        typeof appointmentData.discountAmount
+      );
+      console.log("totalAmount type:", typeof appointmentData.totalAmount);
+
       const appointmentApi = new AppointmentsApi();
 
       const res = await appointmentApi.createAppointment(appointmentData);
@@ -419,9 +429,13 @@ const AppointmentsScreen = () => {
     const subtotal = getSubtotalPrice();
 
     if (selectedVoucher.isPercentage === false) {
-      return selectedVoucher.discountAmount;
+      return Number(selectedVoucher.discountAmount) || 0;
     } else {
-      return Math.round(subtotal * (selectedVoucher.discountPercent / 100));
+      return (
+        Math.round(
+          subtotal * (Number(selectedVoucher.discountPercent) / 100)
+        ) || 0
+      );
     }
   };
 

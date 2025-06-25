@@ -128,7 +128,26 @@
     "home": "Trang chủ",
     "bookings": "Lịch hẹn",
     "hairTryOn": "Thử kiểu tóc",
-    "account": "Tài khoản"
+    "account": "Tài khoản",
+    "notifications": "Thông báo"
+  },
+  "notifications": {
+    "title": "Thông báo",
+    "noNotifications": "Bạn chưa có thông báo nào",
+    "markAllAsRead": "Đánh dấu tất cả là đã đọc",
+    "clearAll": "Xóa tất cả",
+    "appointment": "Lịch hẹn",
+    "promotion": "Khuyến mãi",
+    "system": "Hệ thống",
+    "new": "Mới",
+    "readMore": "Đọc thêm",
+    "notificationDetail": "Chi tiết thông báo",
+    "notificationNotFound": "Không tìm thấy thông báo",
+    "viewPromotion": "Xem khuyến mãi",
+    "viewAppointment": "Xem lịch hẹn",
+    "markAsRead": "Đánh dấu đã đọc",
+    "deleteNotification": "Xóa thông báo",
+    "notificationDeleted": "Đã xóa thông báo"
   },
   "appointment_status": {
     "pending": "Chờ xác nhận",

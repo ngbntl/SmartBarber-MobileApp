@@ -1,9 +1,4 @@
-export interface MessageResponse {
-  statusCode: number;
-  message: string;
-}
-
-export type NotificationType =
+export type NotificationApiType =
   | "success"
   | "error"
   | "info"
@@ -12,11 +7,11 @@ export type NotificationType =
   | "appointment"
   | "system";
 
-export interface Notification {
+export interface NotificationApi {
   id: string;
   title: string;
   content: string;
-  type: NotificationType;
+  type: NotificationApiType;
   isRead: boolean;
   createdAt: string;
   updatedAt: string;
@@ -25,8 +20,8 @@ export interface Notification {
   referenceId?: string;
 }
 
-export interface NotificationsResponse {
-  data: Notification[];
+export interface NotificationsApiResponse {
+  data: NotificationApi[];
   total?: number;
   page?: number;
   limit?: number;

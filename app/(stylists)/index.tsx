@@ -20,6 +20,7 @@ import { Colors } from "@/constants/Colors";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
 import AppointmentsApi from "@/api/appointments";
 import ReviewApi from "@/api/reviews";
+import NotificationApi from "@/api/notifications";
 import { formatTime, formatPrice } from "@/utils/functions";
 import { format } from "date-fns";
 import Toast from "@/components/ui/Toast";
@@ -32,7 +33,8 @@ const StylistHomeScreen = () => {
   const { toast, setToast } = useNotification();
   const fadeAnim = useState(new Animated.Value(0))[0];
 
-  const [hasNewNotifications, setHasNewNotifications] = useState(true);
+  const [hasNewNotifications, setHasNewNotifications] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const userInfo = useSelector((state: RootState) => state.auth.userInfo);
 
@@ -52,7 +54,37 @@ const StylistHomeScreen = () => {
       duration: 800,
       useNativeDriver: true,
     }).start();
+
+    fetchUnreadNotificationCount();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchUnreadNotificationCount();
+    }, [])
+  );
+
+  const fetchUnreadNotificationCount = async () => {
+    try {
+      const notificationApi = new NotificationApi();
+      const response = await notificationApi.getUnreadCount();
+
+      if (response && typeof response.count === "number") {
+        setUnreadCount(response.count);
+        setHasNewNotifications(response.count > 0);
+      } else if (typeof response === "number") {
+        setUnreadCount(response);
+        setHasNewNotifications(response > 0);
+      } else {
+        setUnreadCount(0);
+        setHasNewNotifications(false);
+      }
+    } catch (error) {
+      console.error("Error fetching unread notifications count:", error);
+      setUnreadCount(0);
+      setHasNewNotifications(false);
+    }
+  };
 
   const fetchAppointments = async () => {
     if (!userInfo?.id) return;
@@ -390,20 +422,21 @@ const StylistHomeScreen = () => {
               <View className="flex-row items-center">
                 <TouchableOpacity
                   className="relative mr-4"
-                  // onPress={() => router.push("/(stylists)/notifications")}
+                  onPress={() => router.push("/(stylists)/notifications")}
                 >
                   <Ionicons
                     name="notifications-outline"
                     size={24}
                     color="#ffffff"
                   />
-                  {/* {hasNewNotifications && (
+                  {hasNewNotifications && (
                     <View className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full items-center justify-center">
                       <Text className="text-[10px] font-bold text-white">
-                        2
+                        {/* Placeholder for notification count */}
+                        {unreadCount > 99 ? "99+" : unreadCount || ""}
                       </Text>
                     </View>
-                  )} */}
+                  )}
                 </TouchableOpacity>
 
                 <View className="relative">
