@@ -7,6 +7,9 @@ import {
   Image,
   Alert,
   Switch,
+  Modal,
+  Pressable,
+  StyleSheet,
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import ScreenWrapper from "@/components/ui/ScreenWrapper";
@@ -16,8 +19,79 @@ import { useSelector } from "react-redux";
 import { useLogout } from "@/utils/auth";
 import { useTranslation } from "react-i18next";
 import { useNotification } from "@/hooks/useNotification";
+import { useLanguage } from "@/hooks/useLanguage";
 import Toast from "@/components/ui/Toast";
 import UpdateUserProfile from "@/components/modal/updateUserProfile";
+
+// Language selection modal component
+const LanguageSelectionModal = ({ visible, onClose }) => {
+  const { currentLanguage, changeLanguage } = useLanguage();
+  const { t } = useTranslation();
+
+  const languages = [
+    { code: "vi", name: "Tiếng Việt", flag: "🇻🇳" },
+    { code: "en", name: "English", flag: "🇬🇧" },
+    { code: "ja", name: "日本語", flag: "🇯🇵" },
+  ];
+
+  const handleLanguageChange = (code: string) => {
+    changeLanguage(code);
+    onClose();
+  };
+
+  return (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <Pressable style={styles.modalOverlay} onPress={onClose}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHeader}>
+            <Text style={styles.modalTitle}>
+              {t("settings.select_language", "Select Language")}
+            </Text>
+            <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+              <Ionicons name="close" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.languageList}>
+            {languages.map((lang) => (
+              <TouchableOpacity
+                key={lang.code}
+                style={[
+                  styles.languageItem,
+                  currentLanguage === lang.code && styles.selectedLanguageItem,
+                ]}
+                onPress={() => handleLanguageChange(lang.code)}
+              >
+                <Text style={styles.languageFlag}>{lang.flag}</Text>
+                <Text
+                  style={[
+                    styles.languageName,
+                    currentLanguage === lang.code &&
+                      styles.selectedLanguageText,
+                  ]}
+                >
+                  {lang.name}
+                </Text>
+                {currentLanguage === lang.code && (
+                  <Ionicons
+                    name="checkmark-circle"
+                    size={20}
+                    color={Colors.primary}
+                  />
+                )}
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+      </Pressable>
+    </Modal>
+  );
+};
 
 const SettingsScreen = () => {
   const { t } = useTranslation();
@@ -31,6 +105,7 @@ const SettingsScreen = () => {
 
   const [notifications, setNotifications] = useState(true);
   const [editProfileModalVisible, setEditProfileModalVisible] = useState(false);
+  const [languageModalVisible, setLanguageModalVisible] = useState(false);
 
   const handleLogout = () => {
     Alert.alert(
@@ -59,7 +134,7 @@ const SettingsScreen = () => {
     {
       icon: "language-outline",
       label: t("settings.language", "Language"),
-      action: () => console.log("Navigate to Language"),
+      action: () => setLanguageModalVisible(true),
     },
     {
       icon: "help-circle-outline",
@@ -228,8 +303,67 @@ const SettingsScreen = () => {
         onClose={() => setEditProfileModalVisible(false)}
         userInfo={userInfo}
       />
+      <LanguageSelectionModal
+        visible={languageModalVisible}
+        onClose={() => setLanguageModalVisible(false)}
+      />
     </ScreenWrapper>
   );
 };
+
+const styles = StyleSheet.create({
+  modalOverlay: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    elevation: 5,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 15,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  closeButton: {
+    padding: 5,
+  },
+  languageList: {
+    maxHeight: 300,
+  },
+  languageItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+  selectedLanguageItem: {
+    backgroundColor: Colors.primary + "10",
+  },
+  languageFlag: {
+    fontSize: 18,
+    marginRight: 10,
+  },
+  languageName: {
+    fontSize: 16,
+    color: "#333",
+  },
+  selectedLanguageText: {
+    fontWeight: "bold",
+    color: Colors.primary,
+  },
+});
 
 export default SettingsScreen;

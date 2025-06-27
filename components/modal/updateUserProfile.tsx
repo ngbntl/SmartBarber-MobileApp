@@ -33,7 +33,7 @@ const UpdateUserProfile = ({
 }: UpdateUserProfileProps) => {
   const { t } = useTranslation();
   const dispatch = useDispatch();
-  const { appNotification } = useNotification();
+  const { appNotification, setToast } = useNotification();
 
   const [editFirstName, setEditFirstName] = useState(userInfo?.firstName || "");
   const [editLastName, setEditLastName] = useState(userInfo?.lastName || "");
@@ -117,29 +117,44 @@ const UpdateUserProfile = ({
       let updatedUser = { ...userInfo };
       let hasChanges = false;
 
+      // Update profile information (firstName, lastName)
       const profileChanged =
         editFirstName !== userInfo?.firstName ||
         editLastName !== userInfo?.lastName;
 
       if (profileChanged) {
-        const updatedUserData = {
-          firstName: editFirstName,
-          lastName: editLastName,
-        };
-
-        const result = await userApi.updateProfile(updatedUserData);
-        if (result) {
-          const fullName = `${editFirstName} ${editLastName}`.trim();
-
-          updatedUser = {
-            ...updatedUser,
-            ...updatedUserData,
-            fullName,
+        try {
+          const updatedUserData = {
+            firstName: editFirstName,
+            lastName: editLastName,
           };
-          hasChanges = true;
+
+          const result = await userApi.updateProfile(updatedUserData);
+          if (result) {
+            const fullName = `${editFirstName} ${editLastName}`.trim();
+
+            updatedUser = {
+              ...updatedUser,
+              ...updatedUserData,
+              fullName,
+            };
+            hasChanges = true;
+            setToast({
+              message: t("settings.profile_updated_successfully"),
+              type: "success",
+            });
+          }
+        } catch (profileError: any) {
+          console.error("Error updating profile data:", profileError);
+          appNotification({
+            message: profileError?.message || t("settings.profile_update_error"),
+            statusCode: profileError?.statusCode || 400,
+          });
+          // Continue with avatar upload even if profile update fails
         }
       }
 
+      // Update avatar if changed
       const avatarChanged =
         editAvatar &&
         editAvatar !== userInfo?.avatar &&
@@ -148,53 +163,64 @@ const UpdateUserProfile = ({
       if (avatarChanged) {
         try {
           const formData = new FormData();
-          const fileName = editAvatar.split("/").pop();
-          const match = /\.(\w+)$/.exec(fileName || "image.jpg");
+          const fileName = editAvatar.split("/").pop() || `photo_${Date.now()}.jpg`;
+          const match = /\.(\w+)$/.exec(fileName);
           const type = match ? `image/${match[1]}` : "image/jpeg";
 
+          // Create the file object properly
           formData.append("file", {
             uri: editAvatar,
             type: type,
-            name: fileName || `photo_${Date.now()}.jpg`,
+            name: fileName,
           } as any);
 
           const avatarResult = await userApi.updateAvatar(formData);
-          console.log("Avatar upload result:", avatarResult);
-
+          
           if (avatarResult) {
+            // Check different possible response formats
             const newAvatarUrl =
-              avatarResult.avatar || avatarResult.avatarUrl || avatarResult.url;
+              avatarResult.avatar || 
+              avatarResult.avatarUrl || 
+              avatarResult.url || 
+              (typeof avatarResult === 'string' ? avatarResult : null);
 
             if (newAvatarUrl) {
               updatedUser.avatar = newAvatarUrl;
               hasChanges = true;
-              console.log("Avatar updated successfully:", newAvatarUrl);
+              setToast({
+                message: t("settings.avatar_updated_successfully"),
+                type: "success",
+              });
             } else {
-              console.warn(
-                "Avatar upload response didn't contain avatar URL:",
-                avatarResult
-              );
+              console.warn("Avatar upload response format is unexpected:", avatarResult);
+              appNotification({
+                message: t("settings.avatar_update_error"),
+                statusCode: 400,
+              });
             }
           }
-        } catch (avatarError) {
+        } catch (avatarError: any) {
           console.error("Error uploading avatar:", avatarError);
           appNotification({
-            message: t("settings.avatar_update_error"),
-            statusCode: 400,
+            message: avatarError?.message || t("settings.avatar_update_error"),
+            statusCode: avatarError?.statusCode || 400,
           });
         }
       }
 
       if (hasChanges) {
         dispatch(setUserInfo(updatedUser));
-
         onClose();
       } else {
+        // If no changes were made successfully, just close the modal
         onClose();
       }
     } catch (error: any) {
-      console.error("Error updating profile:", error);
-      appNotification(error);
+      console.error("Error in profile update process:", error);
+      appNotification({
+        message: error?.message || t("common.something_went_wrong"),
+        statusCode: error?.statusCode || 400,
+      });
     } finally {
       setIsLoading(false);
     }
